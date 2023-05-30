@@ -1,5 +1,5 @@
 {
-  "name": "s3-viewer",
+  "name": "@bu-sail/s3-viewer",
   "private": true,
   "version": "0.0.0",
   "type": "module",
