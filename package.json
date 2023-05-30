@@ -37,11 +37,21 @@
     "prop-types": "^15.8.1",
     "storybook": "^7.0.18",
     "typescript": "^5.0.2",
-    "vite": "^4.3.9"
+    "vite": "^4.3.9",
+    "vite-plugin-dts": "^2.3.0"
   },
   "eslintConfig": {
     "extends": [
       "plugin:storybook/recommended"
     ]
+  },
+  "main": "./dist/s3-viewer.umd.js",
+  "module": "./dist/s3-viewer.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/s3-viewer.es.js",
+      "require": "./dist/s3-viewer.umd.js"
+    }
   }
 }
