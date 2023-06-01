@@ -9,7 +9,7 @@ interface FileListViewProps {
   permissions: any;
 }
 
-const FileListView: FC<FileListViewProps> = (props) => {
+export const FileListView: FC<FileListViewProps> = (props) => {
   const { objects, permissions } = props;
 
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
