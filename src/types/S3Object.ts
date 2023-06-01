@@ -1,7 +1,7 @@
 export type S3Object = {
   etag?: string;
   name: string;
-  path: string;
+  location: string;
   lastModified: Date;
   versionId?: string;
   size: number;
