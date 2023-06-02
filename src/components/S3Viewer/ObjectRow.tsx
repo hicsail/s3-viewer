@@ -11,12 +11,16 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
   const { object, permissions } = props;
 
   const name = object.name;
+  const owner = object.owner;
   const lastModified = object.lastModified.toLocaleDateString();
   const size = formatBytes(object.size);
+
+  // const actions
 
   return (
     <TableRow>
       <TableCell>{name}</TableCell>
+      <TableCell>{owner.name}</TableCell>
       <TableCell>{lastModified}</TableCell>
       <TableCell>{size}</TableCell>
       {permissions.actions && <TableCell></TableCell>}

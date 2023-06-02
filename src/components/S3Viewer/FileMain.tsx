@@ -87,6 +87,17 @@ export const FileMain: FC<DirectoryMainProps> = (props) => {
 const fetchTempObjects = async (): Promise<S3Object[]> => {
   // create a list of dummy objects with random date and size, all fields are required
   const objects: S3Object[] = [];
+
+  const generateRandomName = (): string => {
+    const firstName = ['John', 'Jane', 'Michael', 'Emma', 'David', 'Olivia']; // List of possible first names
+    const lastName = ['Smith', 'Johnson', 'Williams', 'Jones', 'Brown', 'Davis']; // List of possible last names
+
+    const randomFirstName = firstName[Math.floor(Math.random() * firstName.length)];
+    const randomLastName = lastName[Math.floor(Math.random() * lastName.length)];
+
+    return `${randomFirstName} ${randomLastName}`;
+  };
+
   for (let i = 0; i < 50; i++) {
     const lastModified = new Date(Date.now() - Math.floor(Math.random() * 10000000000));
     const size = Math.floor(Math.random() * 1000000000);
@@ -94,7 +105,11 @@ const fetchTempObjects = async (): Promise<S3Object[]> => {
     const isFolder = Math.random() > 0.5;
     const ext = isFolder ? '' : `${['txt', 'pdf', 'doc', 'jpg', 'png'][Math.floor(Math.random() * 5)]}`;
     const name = isFolder ? `object-${i}` : `object-${i}.${ext}`;
-    objects.push({ name, location, lastModified, size, isFolder, owner: {}, $raw: {} });
+    const owner = {
+      id: Math.random().toString(36).substring(7),
+      name: generateRandomName()
+    };
+    objects.push({ name, location, lastModified, size, isFolder, owner, $raw: {} });
   }
 
   return objects;

@@ -18,6 +18,7 @@ export const FileListView: FC<FileListViewProps> = (props) => {
 
   const columns = [
     { label: 'Name', id: 'name' },
+    { label: 'Owner', id: 'owner' },
     { label: 'Date Modified', id: 'date' },
     { label: 'Size', id: 'size' }
   ];
@@ -44,6 +45,8 @@ export const FileListView: FC<FileListViewProps> = (props) => {
       switch (orderBy) {
         case 'name':
           return isAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+        case 'owner':
+          return isAsc ? a.owner.name.localeCompare(b.owner.name) : b.owner.name.localeCompare(a.owner.name);
         case 'date':
           return isAsc ? a.lastModified.getTime() - b.lastModified.getTime() : b.lastModified.getTime() - a.lastModified.getTime();
         case 'size':
@@ -58,7 +61,7 @@ export const FileListView: FC<FileListViewProps> = (props) => {
   return (
     <TableContainer>
       <Table>
-        <EnhancedTableHead onRequestSort={handleRequestSort} columns={columns} sortableIds={['name', 'date', 'size']} order={order} orderBy={orderBy} />
+        <EnhancedTableHead onRequestSort={handleRequestSort} columns={columns} sortableIds={['name', 'owner', 'date', 'size']} order={order} orderBy={orderBy} />
         <TableBody>
           {objects.map((object) => (
             <ObjectRow key={object.location + object.name} object={object} permissions={props.permissions} />
