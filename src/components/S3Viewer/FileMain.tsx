@@ -1,9 +1,28 @@
 import { S3Client } from '@aws-sdk/client-s3';
-import { IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Paper, Toolbar, Tooltip, Typography } from '@mui/material';
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  IconButton,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Paper,
+  TextField,
+  Toolbar,
+  Tooltip,
+  Typography
+} from '@mui/material';
 import { FC, MouseEvent, useEffect, useState } from 'react';
 import { S3Object } from '../../types/S3Object';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import GridViewIcon from '@mui/icons-material/GridView';
+import UploadIcon from '@mui/icons-material/Upload';
+import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import { FileListView } from './FileListView';
 
 interface DirectoryMainProps {
@@ -22,6 +41,8 @@ export const FileMain: FC<DirectoryMainProps> = (props) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const [objects, setObjects] = useState<S3Object[]>([]);
+  const [newFolderDialogOpen, setNewFolderDialogOpen] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
 
   const fetchObjects = async () => {
     // TODO: fetch objects from S3
@@ -53,6 +74,30 @@ export const FileMain: FC<DirectoryMainProps> = (props) => {
     handleCloseSwitchView();
   };
 
+  // handler for uploading files
+  const handleClickUpload = () => {
+    // TODO: handle upload action
+    alert('uploading');
+  };
+
+  // handlers for creating new folders
+  const handleClickNewFolder = () => {
+    setNewFolderDialogOpen(true);
+  };
+
+  const handleCloseNewFolder = () => {
+    setNewFolderDialogOpen(false);
+  };
+
+  const handleNewFolderNameChange = (event: any) => {
+    setNewFolderName(event.target.value);
+  };
+
+  const handleNewFolder = () => {
+    // TODO: handle new folder creation
+    alert(`creating new folder ${newFolderName}`);
+  };
+
   // initial fetching for files and folders upon opening the page
   useEffect(() => {
     fetchObjects();
@@ -64,6 +109,36 @@ export const FileMain: FC<DirectoryMainProps> = (props) => {
         <Typography sx={{ flex: '1 1 100%' }} variant="h6" id="tableTitle" component="div">
           Current Folder
         </Typography>
+        <Grid container spacing={1} justifyContent="end">
+          {permissions.upload && (
+            <Grid item>
+              <Button onClick={handleClickUpload} startIcon={<UploadIcon />}>
+                Upload
+              </Button>
+            </Grid>
+          )}
+          {permissions.createFolder && (
+            <Grid item>
+              <Button onClick={handleClickNewFolder} startIcon={<CreateNewFolderIcon />}>
+                New Folder
+              </Button>
+              <Dialog open={newFolderDialogOpen} fullWidth>
+                <DialogTitle>Create New Folder</DialogTitle>
+                <DialogContent>
+                  <TextField style={{ marginTop: '10px' }} label="Folder Name" value={newFolderName} onChange={handleNewFolderNameChange} fullWidth />
+                </DialogContent>
+                <DialogActions>
+                  <Button variant="contained" onClick={handleNewFolder}>
+                    Create
+                  </Button>
+                  <Button variant="outlined" color="error" onClick={handleCloseNewFolder}>
+                    Cancel
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </Grid>
+          )}
+        </Grid>
         <Tooltip title="Switch View" placement="top-end">
           <IconButton onClick={handleClickSwitchView}>{listView ? <FormatListBulletedIcon /> : <GridViewIcon />}</IconButton>
         </Tooltip>
