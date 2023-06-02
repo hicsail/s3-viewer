@@ -20,9 +20,6 @@ export const FileListView: FC<FileListViewProps> = (props) => {
   const [orderBy, setOrderBy] = useState<string>('name');
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
-  const [hover, setHover] = useState<boolean>(false);
-
-  const tableRowRef = useRef<HTMLTableRowElement>(null);
 
   const visibleRows = useMemo(() => {
     return objects.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
@@ -32,11 +29,9 @@ export const FileListView: FC<FileListViewProps> = (props) => {
     { label: 'Name', id: 'name' },
     { label: 'Owner', id: 'owner' },
     { label: 'Date Modified', id: 'date' },
-    { label: 'Size', id: 'size' }
+    { label: 'Size', id: 'size' },
+    { label: '', id: 'actions' }
   ];
-  if (props.permissions.actions) {
-    columns.push({ label: '', id: 'actions' });
-  }
 
   // ########################################
   // #### Handler functions for actions #####
@@ -56,14 +51,6 @@ export const FileListView: FC<FileListViewProps> = (props) => {
       setRowsPerPage(parseInt(event.target.value, 10));
       setPage(0);
     }
-  };
-
-  const handleMouseEnter = () => {
-    setHover(true);
-  };
-
-  const handleMouseLeave = () => {
-    setHover(false);
   };
 
   // update the objects when the props change
