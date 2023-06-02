@@ -24,15 +24,18 @@ import GridViewIcon from '@mui/icons-material/GridView';
 import UploadIcon from '@mui/icons-material/Upload';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import { FileListView } from './FileListView';
+import { useS3Context } from '../../contexts/s3-context';
 
 interface DirectoryMainProps {
   client: S3Client;
   bucket: string;
   permissions: any;
+  onCurrentPathChange?: (currentPath: string) => void;
 }
 
 export const FileMain: FC<DirectoryMainProps> = (props) => {
   const { client, bucket, permissions } = props;
+  const ctx = useS3Context();
 
   // ########################################
   // #### State and variables definitions ###
@@ -44,9 +47,9 @@ export const FileMain: FC<DirectoryMainProps> = (props) => {
   const [newFolderDialogOpen, setNewFolderDialogOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
 
-  const fetchObjects = async () => {
+  const fetchObjects = async (path: string) => {
     // TODO: fetch objects from S3
-    console.log('fetching objects');
+    console.log(`fetching objects for path [${path}]`);
     const objects = await fetchTempObjects();
     setObjects(objects);
   };
@@ -100,8 +103,13 @@ export const FileMain: FC<DirectoryMainProps> = (props) => {
 
   // initial fetching for files and folders upon opening the page
   useEffect(() => {
-    fetchObjects();
+    fetchObjects(ctx.currentPath);
   }, []);
+
+  useEffect(() => {
+    fetchObjects(ctx.currentPath);
+    props.onCurrentPathChange && props.onCurrentPathChange(ctx.currentPath);
+  }, [ctx.currentPath]);
 
   return (
     <Paper>

@@ -1,10 +1,12 @@
 import { FC } from 'react';
 import { FileMain } from './FileMain';
 import { S3Client } from '@aws-sdk/client-s3';
+import { S3Provider } from '../../contexts/s3-context';
 
 interface S3ViewerProps {
   client: S3Client;
   bucket: string;
+  onCurrentPathChange?: (currentPath: string) => void;
   disableActions?: boolean;
   disableRead?: boolean;
   disableWrite?: boolean;
@@ -31,5 +33,9 @@ export const S3Viewer: FC<S3ViewerProps> = (props) => {
     createFolder: !props.disableCreateFolder && write
   };
 
-  return <FileMain client={props.client} bucket={props.bucket} permissions={permissions} />;
+  return (
+    <S3Provider>
+      <FileMain client={props.client} bucket={props.bucket} permissions={permissions} onCurrentPathChange={props.onCurrentPathChange} />
+    </S3Provider>
+  );
 };
