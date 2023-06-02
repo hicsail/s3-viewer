@@ -1,4 +1,4 @@
-import { FC, MouseEvent, useEffect, useMemo, useState } from 'react';
+import { FC, MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { S3Object } from '../../types/S3Object';
 import { Table, TableBody, TableContainer, TablePagination } from '@mui/material';
 import EnhancedTableHead from '../EnhancedTableHead';
@@ -20,6 +20,9 @@ export const FileListView: FC<FileListViewProps> = (props) => {
   const [orderBy, setOrderBy] = useState<string>('name');
   const [page, setPage] = useState<number>(0);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+  const [hover, setHover] = useState<boolean>(false);
+
+  const tableRowRef = useRef<HTMLTableRowElement>(null);
 
   const visibleRows = useMemo(() => {
     return objects.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
@@ -32,7 +35,7 @@ export const FileListView: FC<FileListViewProps> = (props) => {
     { label: 'Size', id: 'size' }
   ];
   if (props.permissions.actions) {
-    columns.push({ label: 'Actions', id: 'actions' });
+    columns.push({ label: '', id: 'actions' });
   }
 
   // ########################################
@@ -53,6 +56,14 @@ export const FileListView: FC<FileListViewProps> = (props) => {
       setRowsPerPage(parseInt(event.target.value, 10));
       setPage(0);
     }
+  };
+
+  const handleMouseEnter = () => {
+    setHover(true);
+  };
+
+  const handleMouseLeave = () => {
+    setHover(false);
   };
 
   // update the objects when the props change
