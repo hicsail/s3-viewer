@@ -15,6 +15,9 @@ interface DirectoryMainProps {
 export const FileMain: FC<DirectoryMainProps> = (props) => {
   const { client, bucket, permissions } = props;
 
+  // ########################################
+  // #### State and variables definitions ###
+  // ########################################
   const [listView, setListView] = useState(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -84,6 +87,9 @@ export const FileMain: FC<DirectoryMainProps> = (props) => {
   );
 };
 
+// ########################################
+// ########### Helper Functions ###########
+// ########################################
 const fetchTempObjects = async (): Promise<S3Object[]> => {
   // create a list of dummy objects with random date and size, all fields are required
   const objects: S3Object[] = [];

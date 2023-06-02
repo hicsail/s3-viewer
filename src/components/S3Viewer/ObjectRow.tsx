@@ -26,6 +26,9 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
   );
 };
 
+// ########################################
+// ########### Helper Functions ###########
+// ########################################
 const formatBytes = (size: number | undefined): string => {
   if (!size || size == 0) {
     return '-';

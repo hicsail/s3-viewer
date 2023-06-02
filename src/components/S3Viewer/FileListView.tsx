@@ -12,6 +12,9 @@ interface FileListViewProps {
 export const FileListView: FC<FileListViewProps> = (props) => {
   const { permissions } = props;
 
+  // ########################################
+  // #### State and variables definitions ###
+  // ########################################
   const [objects, setObjects] = useState<S3Object[]>(props.objects);
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [orderBy, setOrderBy] = useState<string>('name');
@@ -26,6 +29,9 @@ export const FileListView: FC<FileListViewProps> = (props) => {
     columns.push({ label: 'Actions', id: 'actions' });
   }
 
+  // ########################################
+  // #### Handler functions for actions #####
+  // ########################################
   const handleRequestSort = (_event: MouseEvent<unknown>, property: string) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
