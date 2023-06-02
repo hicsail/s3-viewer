@@ -15,8 +15,6 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
   const lastModified = object.lastModified.toLocaleDateString();
   const size = formatBytes(object.size);
 
-  // const actions
-
   return (
     <TableRow>
       <TableCell>{name}</TableCell>
