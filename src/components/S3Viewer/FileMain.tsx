@@ -25,6 +25,7 @@ import UploadIcon from '@mui/icons-material/Upload';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import { FileListView } from './FileListView';
 import { useS3Context } from '../../contexts/s3-context';
+import { getObjects } from '../../utils/S3Utils';
 
 interface DirectoryMainProps {
   client: S3Client;
@@ -50,7 +51,8 @@ export const FileMain: FC<DirectoryMainProps> = (props) => {
   const fetchObjects = async (path: string) => {
     // TODO: fetch objects from S3
     console.log(`fetching objects for path [${path}]`);
-    const objects = await fetchTempObjects();
+    // const objects = await fetchTempObjects(client, bucket, path);
+    const objects = await fetchTestObjects(client, bucket, path);
     setObjects(objects);
   };
 
@@ -173,33 +175,37 @@ export const FileMain: FC<DirectoryMainProps> = (props) => {
 // ########################################
 // ########### Helper Functions ###########
 // ########################################
-const fetchTempObjects = async (): Promise<S3Object[]> => {
-  // create a list of dummy objects with random date and size, all fields are required
-  const objects: S3Object[] = [];
+// const fetchTempObjects = async (client: S3Client, bucket: string, path: string): Promise<S3Object[]> => {
+//   // create a list of dummy objects with random date and size, all fields are required
+//   const objects: S3Object[] = [];
 
-  const generateRandomName = (): string => {
-    const firstName = ['John', 'Jane', 'Michael', 'Emma', 'David', 'Olivia']; // List of possible first names
-    const lastName = ['Smith', 'Johnson', 'Williams', 'Jones', 'Brown', 'Davis']; // List of possible last names
+//   const generateRandomName = (): string => {
+//     const firstName = ['John', 'Jane', 'Michael', 'Emma', 'David', 'Olivia']; // List of possible first names
+//     const lastName = ['Smith', 'Johnson', 'Williams', 'Jones', 'Brown', 'Davis']; // List of possible last names
 
-    const randomFirstName = firstName[Math.floor(Math.random() * firstName.length)];
-    const randomLastName = lastName[Math.floor(Math.random() * lastName.length)];
+//     const randomFirstName = firstName[Math.floor(Math.random() * firstName.length)];
+//     const randomLastName = lastName[Math.floor(Math.random() * lastName.length)];
 
-    return `${randomFirstName} ${randomLastName}`;
-  };
+//     return `${randomFirstName} ${randomLastName}`;
+//   };
 
-  for (let i = 0; i < 50; i++) {
-    const lastModified = new Date(Date.now() - Math.floor(Math.random() * 10000000000));
-    const size = Math.floor(Math.random() * 1000000000);
-    const location = `path/to/`;
-    const isFolder = Math.random() > 0.5;
-    const ext = isFolder ? '' : `${['txt', 'pdf', 'doc', 'jpg', 'png'][Math.floor(Math.random() * 5)]}`;
-    const name = isFolder ? `object-${i}` : `object-${i}.${ext}`;
-    const owner = {
-      id: Math.random().toString(36).substring(7),
-      name: generateRandomName()
-    };
-    objects.push({ name, location, lastModified, size, isFolder, owner, $raw: {} });
-  }
+//   for (let i = 0; i < 50; i++) {
+//     const lastModified = new Date(Date.now() - Math.floor(Math.random() * 10000000000));
+//     const size = Math.floor(Math.random() * 1000000000);
+//     const location = `path/to/`;
+//     const isFolder = Math.random() > 0.5;
+//     const ext = isFolder ? '' : `${['txt', 'pdf', 'doc', 'jpg', 'png'][Math.floor(Math.random() * 5)]}`;
+//     const name = isFolder ? `object-${i}` : `object-${i}.${ext}`;
+//     const owner = {
+//       id: Math.random().toString(36).substring(7),
+//       name: generateRandomName()
+//     };
+//     objects.push({ name, location, lastModified, size, isFolder, owner, $raw: {} });
+//   }
 
-  return objects;
+//   return objects;
+// };
+
+const fetchTestObjects = async (client: S3Client, bucket: string, path: string): Promise<S3Object[]> => {
+  return getObjects(client, bucket, path);
 };

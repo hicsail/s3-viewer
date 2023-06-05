@@ -17,7 +17,7 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
 
   const name = object.name;
   const owner = object.owner;
-  const lastModified = object.lastModified.toLocaleDateString();
+  const lastModified = object.lastModified.toLocaleString();
   const size = formatBytes(object.size);
 
   const [displayActions, setDisplayActions] = useState<boolean>(false);
@@ -99,7 +99,7 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
   return (
     <TableRow hover onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <TableCell>{name}</TableCell>
-      <TableCell>{owner.name}</TableCell>
+      <TableCell>{owner?.name}</TableCell>
       <TableCell>{lastModified}</TableCell>
       <TableCell>{size}</TableCell>
       <TableCell>{actions}</TableCell>

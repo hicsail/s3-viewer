@@ -1,4 +1,4 @@
-import { FC, MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { FC, MouseEvent, useEffect, useMemo, useState } from 'react';
 import { S3Object } from '../../types/S3Object';
 import { Table, TableBody, TableContainer, TablePagination } from '@mui/material';
 import EnhancedTableHead from '../EnhancedTableHead';
@@ -10,8 +10,6 @@ interface FileListViewProps {
 }
 
 export const FileListView: FC<FileListViewProps> = (props) => {
-  const { permissions } = props;
-
   // ########################################
   // #### State and variables definitions ###
   // ########################################
