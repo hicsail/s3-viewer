@@ -1,20 +1,44 @@
-import { CopyObjectCommand, DeleteObjectCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { CopyObjectCommand, DeleteObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { S3Object } from '../types/S3Object';
 
-const responseToS3Object = (response: any): S3Object => {
-  const name = response.Key.endsWith('/') ? response.Key.split('/')[response.Key.split('/').length - 2] : response.Key.split('/')[response.Key.split('/').length - 1];
+const fileToS3Object = (path: string, object: any): S3Object => {
+  const name = object.Key.endsWith('/') ? object.Key.split('/').slice(-2, -1)[0] : object.Key.split('/').pop();
 
   return {
-    etag: response.ETag,
+    etag: object.ETag,
     name,
-    location: response.Key,
-    lastModified: response.LastModified,
-    versionId: response.VersionId,
-    size: response.Size,
-    isFolder: response.Key.endsWith('/'),
-    owner: response.Owner,
-    $raw: response
+    location: path,
+    lastModified: object.LastModified,
+    versionId: object.VersionId,
+    size: object.Size,
+    isFolder: object.Key.endsWith('/'),
+    owner: object.Owner,
+    $raw: object
   };
+};
+
+const folderToS3Object = async (client: S3Client, bucketName: string, path: string, object: any): Promise<S3Object> => {
+  const prefix = path ? path + '/' + object.Prefix : object.Prefix;
+  const params = {
+    Bucket: bucketName,
+    Delimiter: '/',
+    Prefix: prefix
+  };
+
+  try {
+    const command = new ListObjectsV2Command(params);
+    const response = await client.send(command);
+
+    for (const content of response.Contents!) {
+      if (content.Key === prefix) {
+        return fileToS3Object(path, content);
+      }
+    }
+
+    throw new Error('Error getting folders: ' + object.Prefix);
+  } catch (error) {
+    throw new Error('Error getting folders: ' + error);
+  }
 };
 
 /**
@@ -33,8 +57,6 @@ export const createFolder = async (client: S3Client, bucketName: string, folderN
     const command = new PutObjectCommand(params);
     await client.send(command);
 
-    const folder = new GetObjectCommand(params);
-    console.log(folder);
     return true;
   } catch (error) {
     throw new Error('Error creating folder: ' + error);
@@ -55,8 +77,8 @@ export const deleteFolder = async (client: S3Client, bucketName: string, folderN
 
   try {
     const command = new DeleteObjectCommand(params);
-    const response = await client.send(command);
-    console.log(response);
+    await client.send(command);
+
     return true;
   } catch (error) {
     throw new Error('Error deleting folder: ' + error);
@@ -81,17 +103,16 @@ export const renameFolder = async (client: S3Client, bucketName: string, folderN
   };
 
   try {
-    const response0 = await client.send(new CopyObjectCommand(copyParams));
-    const response1 = await client.send(new DeleteObjectCommand(deleteParams));
-    console.log(response0);
-    console.log(response1);
+    await client.send(new CopyObjectCommand(copyParams));
+    await client.send(new DeleteObjectCommand(deleteParams));
+
     return true;
   } catch (error) {
     throw new Error('Error renaming folder: ' + error);
   }
 };
 
-export const getFolders = async (client: S3Client, bucketName: string, path: string = ''): Promise<S3Object[]> => {
+export const getObjects = async (client: S3Client, bucketName: string, path: string = ''): Promise<S3Object[]> => {
   const params = {
     Bucket: bucketName,
     Delimiter: '/',
@@ -101,7 +122,16 @@ export const getFolders = async (client: S3Client, bucketName: string, path: str
   try {
     const command = new ListObjectsV2Command(params);
     const response = await client.send(command);
-    return response.CommonPrefixes!.map((folder: any) => responseToS3Object(folder));
+
+    const foldersPromises = response.CommonPrefixes!.map(async (content) => {
+      const folder = await folderToS3Object(client, bucketName, path, content);
+
+      return folder;
+    });
+
+    const folders = await Promise.all(foldersPromises);
+
+    return [...folders, ...response.Contents!.map((content) => fileToS3Object(path, content))];
   } catch (error) {
     throw new Error('Error getting folders: ' + error);
   }
