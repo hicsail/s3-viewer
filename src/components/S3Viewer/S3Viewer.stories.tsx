@@ -26,13 +26,13 @@ type Story = StoryObj<typeof S3Viewer>;
 export const Primary: Story = (args: any) => <S3Viewer {...args} />;
 Primary.args = {
   client: new S3Client({
-    region: 'us-east-1',
+    region: import.meta.env.VITE_TEST_BUCKET_REGION,
     credentials: {
-      accessKeyId: import.meta.env.TEST_AWS_KEY,
-      secretAccessKey: import.meta.env.TEST_AWS_SECRET
+      accessKeyId: import.meta.env.VITE_TEST_AWS_KEY,
+      secretAccessKey: import.meta.env.VITE_TEST_AWS_SECRET
     }
   }),
-  bucket: 'rene-private-test',
+  bucket: import.meta.env.VITE_TEST_BUCKET_NAME,
   disableActions: false,
   disableRead: false,
   disableWrite: false,
