@@ -53,7 +53,6 @@ export const FileListView: FC<FileListViewProps> = (props) => {
 
   // update the objects when the props change
   useEffect(() => {
-    console.log('updating objects');
     setObjects(props.objects);
   }, [props.objects]);
 

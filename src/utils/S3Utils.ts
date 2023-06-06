@@ -33,7 +33,7 @@ const folderToS3Object = async (client: S3Client, bucketName: string, path: stri
       location: path,
       lastModified: response.LastModified!,
       versionId: response.VersionId,
-      size: response.ContentLength,
+      size: response.ContentLength ? response.ContentLength : 0,
       isFolder: true,
       $raw: response
     };

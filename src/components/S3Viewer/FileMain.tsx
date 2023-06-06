@@ -1,6 +1,8 @@
 import { S3Client } from '@aws-sdk/client-s3';
 import {
+  Backdrop,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -14,8 +16,7 @@ import {
   Paper,
   TextField,
   Toolbar,
-  Tooltip,
-  Typography
+  Tooltip
 } from '@mui/material';
 import { FC, MouseEvent, useEffect, useState } from 'react';
 import { S3Object } from '../../types/S3Object';
@@ -26,6 +27,7 @@ import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import { FileListView } from './FileListView';
 import { useS3Context } from '../../contexts/s3-context';
 import { getObjects } from '../../utils/S3Utils';
+import { FileBreadCrumb } from './FileBreadcrumb';
 
 interface DirectoryMainProps {
   client: S3Client;
@@ -44,16 +46,21 @@ export const FileMain: FC<DirectoryMainProps> = (props) => {
   const [listView, setListView] = useState(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const [loading, setLoading] = useState(false);
   const [objects, setObjects] = useState<S3Object[]>([]);
   const [newFolderDialogOpen, setNewFolderDialogOpen] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
 
   const fetchObjects = async (path: string) => {
-    // TODO: fetch objects from S3
-    console.log(`fetching objects for path [${path}]`);
+    setLoading(true);
     // const objects = await fetchTempObjects(client, bucket, path);
+    if (path) {
+      path += '/';
+    }
+
     const objects = await fetchTestObjects(client, bucket, path);
     setObjects(objects);
+    setLoading(false);
   };
 
   // ########################################
@@ -116,9 +123,7 @@ export const FileMain: FC<DirectoryMainProps> = (props) => {
   return (
     <Paper>
       <Toolbar>
-        <Typography sx={{ flex: '1 1 100%' }} variant="h6" id="tableTitle" component="div">
-          Current Folder
-        </Typography>
+        <FileBreadCrumb />
         <Grid container spacing={1} justifyContent="end">
           {permissions.upload && (
             <Grid item>
@@ -167,7 +172,12 @@ export const FileMain: FC<DirectoryMainProps> = (props) => {
           </MenuItem>
         </Menu>
       </Toolbar>
-      {listView && <FileListView objects={objects} permissions={permissions} />}
+      <div style={{ position: 'relative' }}>
+        <Backdrop open={loading} sx={{ position: 'absolute', zIndex: 9999 }}>
+          <CircularProgress color="inherit" />
+        </Backdrop>
+        {listView && <FileListView objects={objects} permissions={permissions} />}
+      </div>
     </Paper>
   );
 };

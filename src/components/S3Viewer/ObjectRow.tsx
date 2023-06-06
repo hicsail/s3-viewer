@@ -67,7 +67,7 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
     }
 
     const newPath = ctx.currentPath ? ctx.currentPath + '/' + name : name;
-    ctx.setCurrentPath(newPath + '/');
+    ctx.setCurrentPath(newPath);
   };
 
   const handleEscapeDoubleClick = (event: MouseEvent) => {
