@@ -1,4 +1,4 @@
-import { CopyObjectCommand, DeleteObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { CopyObjectCommand, DeleteObjectCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { S3Object } from '../types/S3Object';
 
 const fileToS3Object = (path: string, object: any): S3Object => {
@@ -18,24 +18,25 @@ const fileToS3Object = (path: string, object: any): S3Object => {
 };
 
 const folderToS3Object = async (client: S3Client, bucketName: string, path: string, object: any): Promise<S3Object> => {
-  const prefix = path ? path + '/' + object.Prefix : object.Prefix;
   const params = {
     Bucket: bucketName,
-    Delimiter: '/',
-    Prefix: prefix
+    Key: object.Prefix
   };
 
   try {
-    const command = new ListObjectsV2Command(params);
+    const command = new GetObjectCommand(params);
     const response = await client.send(command);
 
-    for (const content of response.Contents!) {
-      if (content.Key === prefix) {
-        return fileToS3Object(path, content);
-      }
-    }
-
-    throw new Error('Error getting folders: ' + object.Prefix);
+    return {
+      etag: response.ETag,
+      name: object.Prefix.split('/').slice(-2, -1)[0],
+      location: path,
+      lastModified: response.LastModified!,
+      versionId: response.VersionId,
+      size: response.ContentLength,
+      isFolder: true,
+      $raw: response
+    };
   } catch (error) {
     throw new Error('Error getting folders: ' + error);
   }
@@ -123,15 +124,17 @@ export const getObjects = async (client: S3Client, bucketName: string, path: str
     const command = new ListObjectsV2Command(params);
     const response = await client.send(command);
 
-    const foldersPromises = response.CommonPrefixes!.map(async (content) => {
+    const foldersPromises = response.CommonPrefixes?.map(async (content) => {
       const folder = await folderToS3Object(client, bucketName, path, content);
 
       return folder;
     });
 
-    const folders = await Promise.all(foldersPromises);
+    const folders = foldersPromises ? await Promise.all(foldersPromises) : [];
+    const content = response.Contents?.filter((content) => content.Key !== path);
+    const files = content?.map((content) => fileToS3Object(path, content)) ?? [];
 
-    return [...folders, ...response.Contents!.map((content) => fileToS3Object(path, content))];
+    return [...folders, ...files];
   } catch (error) {
     throw new Error('Error getting folders: ' + error);
   }

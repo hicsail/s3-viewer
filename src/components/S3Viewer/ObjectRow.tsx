@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC, MouseEvent, useState } from 'react';
 import { Grid, IconButton, TableCell, TableRow } from '@mui/material';
 import { S3Object } from '../../types/S3Object';
 import PreviewIcon from '@mui/icons-material/Preview';
@@ -6,6 +6,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import { useS3Context } from '../../contexts/s3-context';
 
 interface ObjectRowProps {
   object: S3Object;
@@ -14,6 +15,7 @@ interface ObjectRowProps {
 
 export const ObjectRow: FC<ObjectRowProps> = (props) => {
   const { object, permissions } = props;
+  const ctx = useS3Context();
 
   const name = object.name;
   const owner = object.owner;
@@ -53,9 +55,19 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
     alert('delete');
   };
 
-  const HandleDetails = () => {
+  const handleDetails = () => {
     // TODO: implement details action
     alert('details');
+  };
+
+  const handleDoubleClickRow = () => {
+    // TODO: implement double click action
+    const newPath = ctx.currentPath ? ctx.currentPath + '/' + name : name;
+    ctx.setCurrentPath(newPath + '/');
+  };
+
+  const handleEscapeDoubleClick = (event: MouseEvent) => {
+    event.stopPropagation();
   };
 
   const actions = (
@@ -89,7 +101,7 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
         </Grid>
       )}
       <Grid item xs={2}>
-        <IconButton onClick={HandleDetails} sx={displayActions ? {} : { visibility: 'hidden' }}>
+        <IconButton onClick={handleDetails} sx={displayActions ? {} : { visibility: 'hidden' }}>
           <MoreHorizIcon />
         </IconButton>
       </Grid>
@@ -97,12 +109,12 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
   );
 
   return (
-    <TableRow hover onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+    <TableRow hover onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onDoubleClick={handleDoubleClickRow}>
       <TableCell>{name}</TableCell>
       <TableCell>{owner?.name}</TableCell>
       <TableCell>{lastModified}</TableCell>
       <TableCell>{size}</TableCell>
-      <TableCell>{actions}</TableCell>
+      <TableCell onDoubleClick={handleEscapeDoubleClick}>{actions}</TableCell>
     </TableRow>
   );
 };

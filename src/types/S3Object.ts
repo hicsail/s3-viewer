@@ -4,7 +4,7 @@ export type S3Object = {
   location: string;
   lastModified: Date;
   versionId?: string;
-  size: number;
+  size?: number;
   isFolder: boolean;
   ext?: string;
   owner: any;
