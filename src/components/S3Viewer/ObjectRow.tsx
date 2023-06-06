@@ -60,8 +60,12 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
     alert('details');
   };
 
-  const handleDoubleClickRow = () => {
-    // TODO: implement double click action
+  const handleDoubleClickRow = (event: MouseEvent) => {
+    if (!object.isFolder) {
+      event.stopPropagation();
+      return;
+    }
+
     const newPath = ctx.currentPath ? ctx.currentPath + '/' + name : name;
     ctx.setCurrentPath(newPath + '/');
   };
