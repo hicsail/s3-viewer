@@ -8,6 +8,7 @@ const meta: Meta<typeof S3Viewer> = {
   argTypes: {
     client: { control: false },
     bucket: { control: false },
+    bucketDisplayedName: { control: 'text' },
     disableActions: { control: 'boolean' },
     disableRead: { control: 'boolean' },
     disableWrite: { control: 'boolean' },
@@ -33,6 +34,7 @@ Primary.args = {
     }
   }),
   bucket: import.meta.env.VITE_TEST_BUCKET_NAME,
+  bucketDisplayedName: 'Test Bucket',
   disableActions: false,
   disableRead: false,
   disableWrite: false,

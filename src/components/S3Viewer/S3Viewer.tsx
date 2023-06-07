@@ -6,6 +6,7 @@ import { S3Provider } from '../../contexts/s3-context';
 interface S3ViewerProps {
   client: S3Client;
   bucket: string;
+  bucketDisplayedName?: string;
   onCurrentPathChange?: (currentPath: string) => void;
   disableActions?: boolean;
   disableRead?: boolean;
@@ -35,7 +36,13 @@ export const S3Viewer: FC<S3ViewerProps> = (props) => {
 
   return (
     <S3Provider>
-      <FileMain client={props.client} bucket={props.bucket} permissions={permissions} onCurrentPathChange={props.onCurrentPathChange} />
+      <FileMain
+        client={props.client}
+        bucket={props.bucket}
+        bucketDisplayedName={props.bucketDisplayedName}
+        permissions={permissions}
+        onCurrentPathChange={props.onCurrentPathChange}
+      />
     </S3Provider>
   );
 };

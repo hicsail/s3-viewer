@@ -29,15 +29,16 @@ import { useS3Context } from '../../contexts/s3-context';
 import { getObjects } from '../../utils/S3Utils';
 import { FileBreadCrumb } from './FileBreadcrumb';
 
-interface DirectoryMainProps {
+interface FileMainProps {
   client: S3Client;
   bucket: string;
+  bucketDisplayedName?: string;
   permissions: any;
   onCurrentPathChange?: (currentPath: string) => void;
 }
 
-export const FileMain: FC<DirectoryMainProps> = (props) => {
-  const { client, bucket, permissions } = props;
+export const FileMain: FC<FileMainProps> = (props) => {
+  const { client, bucket, bucketDisplayedName, permissions } = props;
   const ctx = useS3Context();
 
   // ########################################
@@ -123,7 +124,7 @@ export const FileMain: FC<DirectoryMainProps> = (props) => {
   return (
     <Paper>
       <Toolbar>
-        <FileBreadCrumb />
+        <FileBreadCrumb bucketName={bucketDisplayedName ? bucketDisplayedName : bucket} />
         <Grid container spacing={1} justifyContent="end">
           {permissions.upload && (
             <Grid item>
