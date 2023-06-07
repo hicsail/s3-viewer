@@ -48,10 +48,10 @@ const folderToS3Object = async (client: S3Client, bucketName: string, path: stri
  * @returns a boolean value indicating whether the folder was created successfully
  * @throws an error if the folder could not be created
  */
-export const createFolder = async (client: S3Client, bucketName: string, folderName: string, path: string = ''): Promise<boolean> => {
+export const createFolder = async (client: S3Client, bucketName: string, path: string = '', folderName: string): Promise<boolean> => {
   const params = {
     Bucket: bucketName,
-    Key: path + folderName.trim() + '/'
+    Key: path ? `${path}/${folderName.trim()}/` : `${folderName.trim()}/`
   };
 
   try {
@@ -73,7 +73,7 @@ export const createFolder = async (client: S3Client, bucketName: string, folderN
 export const deleteFolder = async (client: S3Client, bucketName: string, folderName: string, path: string = ''): Promise<boolean> => {
   const params = {
     Bucket: bucketName,
-    Key: path + folderName.trim() + '/'
+    Key: path ? `${path}/${folderName.trim()}/` : `${folderName.trim()}/`
   };
 
   try {
@@ -96,11 +96,11 @@ export const renameFolder = async (client: S3Client, bucketName: string, folderN
   const copyParams = {
     Bucket: bucketName,
     CopySource: `${bucketName}/${folderName.trim() + '/'}`,
-    Key: path + newFolderName.trim() + '/'
+    Key: path ? `${path}/${newFolderName.trim()}/` : `${newFolderName.trim()}/`
   };
   const deleteParams = {
     Bucket: bucketName,
-    Key: path + folderName.trim() + '/'
+    Key: path ? `${path}/${folderName.trim()}/` : `${folderName.trim()}/`
   };
 
   try {
@@ -113,7 +113,7 @@ export const renameFolder = async (client: S3Client, bucketName: string, folderN
   }
 };
 
-export const getObjects = async (client: S3Client, bucketName: string, path: string = ''): Promise<S3Object[]> => {
+export const getFoldersAndFiles = async (client: S3Client, bucketName: string, path: string = ''): Promise<S3Object[]> => {
   const params = {
     Bucket: bucketName,
     Delimiter: '/',
@@ -137,5 +137,29 @@ export const getObjects = async (client: S3Client, bucketName: string, path: str
     return [...folders, ...files];
   } catch (error) {
     throw new Error('Error getting folders: ' + error);
+  }
+};
+
+/**
+ * Uploads a file to the specified bucket. Space before and after the file name will be trimmed.
+ * If the file already exists, it will be overwritten.
+ *
+ * @returns a boolean value indicating whether the file was uploaded successfully
+ * @throws an error if the file could not be uploaded
+ */
+export const uploadFile = async (client: S3Client, bucketName: string, path: string = '', file: File): Promise<boolean> => {
+  const params = {
+    Bucket: bucketName,
+    Key: path ? `${path}/${file.name.trim()}/` : `${file.name.trim()}/`,
+    Body: file
+  };
+
+  try {
+    const command = new PutObjectCommand(params);
+    await client.send(command);
+
+    return true;
+  } catch (error) {
+    throw new Error('Error uploading file: ' + error);
   }
 };
