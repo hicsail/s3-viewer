@@ -202,6 +202,47 @@ export const FileMain: FC<FileMainProps> = (props) => {
     props.onCurrentPathChange && props.onCurrentPathChange(ctx.currentPath);
   }, [ctx.currentPath]);
 
+  // ########################################
+  // ####### Components for rendering #######
+  // ########################################
+  const createFolderDialog = (
+    <Dialog open={newFolderDialogOpen} fullWidth>
+      <DialogTitle>Create New Folder</DialogTitle>
+      <DialogContent>
+        <TextField
+          style={{ marginTop: '10px' }}
+          label="Folder Name"
+          value={newFolderName}
+          onChange={handleNewFolderNameChange}
+          error={textFieldError}
+          helperText={textFieldHelperText}
+          fullWidth
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button variant="contained" onClick={handleNewFolder} disabled={!Boolean(newFolderName)}>
+          Create
+        </Button>
+        <Button variant="outlined" color="error" onClick={handleCloseNewFolder}>
+          Cancel
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+
+  const uploadPopup = (
+    <Snackbar
+      anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      open={snackBarSettings.open}
+      autoHideDuration={5000}
+      onClose={() => setSnackBarSettings({ ...snackBarSettings, open: false })}
+    >
+      <Alert severity={snackBarSettings.severity} sx={{ width: '100%' }}>
+        {snackBarSettings.message}
+      </Alert>
+    </Snackbar>
+  );
+
   return (
     <Paper>
       <Toolbar>
@@ -220,28 +261,6 @@ export const FileMain: FC<FileMainProps> = (props) => {
               <Button onClick={handleClickNewFolder} startIcon={<CreateNewFolderIcon />}>
                 New Folder
               </Button>
-              <Dialog open={newFolderDialogOpen} fullWidth>
-                <DialogTitle>Create New Folder</DialogTitle>
-                <DialogContent>
-                  <TextField
-                    style={{ marginTop: '10px' }}
-                    label="Folder Name"
-                    value={newFolderName}
-                    onChange={handleNewFolderNameChange}
-                    error={textFieldError}
-                    helperText={textFieldHelperText}
-                    fullWidth
-                  />
-                </DialogContent>
-                <DialogActions>
-                  <Button variant="contained" onClick={handleNewFolder} disabled={!Boolean(newFolderName)}>
-                    Create
-                  </Button>
-                  <Button variant="outlined" color="error" onClick={handleCloseNewFolder}>
-                    Cancel
-                  </Button>
-                </DialogActions>
-              </Dialog>
             </Grid>
           )}
         </Grid>
@@ -269,16 +288,8 @@ export const FileMain: FC<FileMainProps> = (props) => {
         </Backdrop>
         {listView && <FileListView objects={objects} permissions={permissions} />}
       </div>
-      <Snackbar
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        open={snackBarSettings.open}
-        autoHideDuration={5000}
-        onClose={() => setSnackBarSettings({ ...snackBarSettings, open: false })}
-      >
-        <Alert severity={snackBarSettings.severity} sx={{ width: '100%' }}>
-          {snackBarSettings.message}
-        </Alert>
-      </Snackbar>
+      {createFolderDialog}
+      {uploadPopup}
     </Paper>
   );
 };
