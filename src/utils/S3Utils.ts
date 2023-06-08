@@ -1,5 +1,6 @@
-import { CopyObjectCommand, DeleteObjectCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { CopyObjectCommand, DeleteObjectCommand, DeleteObjectsCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { S3Object } from '../types/S3Object';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 const fileToS3Object = (path: string, object: any): S3Object => {
   const name = object.Key.endsWith('/') ? object.Key.split('/').slice(-2, -1)[0] : object.Key.split('/').pop();
@@ -64,25 +65,44 @@ export const createFolder = async (client: S3Client, bucketName: string, path: s
   }
 };
 
-/**
- * Deletes a folder in the specified bucket. Space before and after the folder name will be trimmed.
- *
- * @returns a boolean value indicating whether the folder was deleted successfully
- * @throws an error if the folder could not be deleted
- */
-export const deleteFolder = async (client: S3Client, bucketName: string, folderName: string, path: string = ''): Promise<boolean> => {
-  const params = {
-    Bucket: bucketName,
-    Key: path ? `${path}/${folderName.trim()}/` : `${folderName.trim()}/`
-  };
+export const deleteFileOrFolder = async (client: S3Client, bucketName: string, object: S3Object): Promise<boolean> => {
+  if (object.isFolder) {
+    const params = {
+      Bucket: bucketName,
+      Prefix: `${object.location}${object.location && '/'}${object.name}`
+    };
 
-  try {
-    const command = new DeleteObjectCommand(params);
-    await client.send(command);
+    try {
+      const command = new ListObjectsV2Command(params);
+      const response = await client.send(command);
 
-    return true;
-  } catch (error) {
-    throw new Error('Error deleting folder: ' + error);
+      const deleteParams = {
+        Bucket: bucketName,
+        Delete: {
+          Objects: response.Contents?.map((content) => ({ Key: content.Key }))
+        }
+      };
+
+      await client.send(new DeleteObjectsCommand(deleteParams));
+
+      return true;
+    } catch (error) {
+      throw new Error('Error deleting folder: ' + error);
+    }
+  } else {
+    const params = {
+      Bucket: bucketName,
+      Key: object.$raw.Key
+    };
+
+    try {
+      const command = new DeleteObjectCommand(params);
+      await client.send(command);
+
+      return true;
+    } catch (error) {
+      throw new Error('Error deleting folder: ' + error);
+    }
   }
 };
 
@@ -152,7 +172,7 @@ export const getFoldersAndFiles = async (client: S3Client, bucketName: string, p
 export const uploadFile = async (client: S3Client, bucketName: string, path: string = '', file: File): Promise<boolean> => {
   const params = {
     Bucket: bucketName,
-    Key: path ? `${path}/${file.name.trim()}/` : `${file.name.trim()}/`,
+    Key: path ? `${path}/${file.name.trim()}` : `${file.name.trim()}`,
     Body: file
   };
 
@@ -163,5 +183,36 @@ export const uploadFile = async (client: S3Client, bucketName: string, path: str
     return true;
   } catch (error) {
     throw new Error('Error uploading file: ' + error);
+  }
+};
+
+export const downloadFile = async (client: S3Client, bucketName: string, file: S3Object): Promise<boolean> => {
+  if (file.isFolder) {
+    console.error('Cannot download a folder');
+    return false;
+  }
+
+  const params = {
+    Bucket: bucketName,
+    Key: file.$raw.Key
+  };
+
+  try {
+    const command = new GetObjectCommand(params);
+    const url = await getSignedUrl(client, command, { expiresIn: 60 });
+
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = file.name;
+    link.click();
+
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
   }
 };

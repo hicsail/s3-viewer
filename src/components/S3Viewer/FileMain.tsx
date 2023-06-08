@@ -29,7 +29,7 @@ import UploadIcon from '@mui/icons-material/Upload';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import { FileListView } from './FileListView';
 import { useS3Context } from '../../contexts/s3-context';
-import { createFolder, getFoldersAndFiles, uploadFile } from '../../utils/S3Utils';
+import { createFolder, deleteFileOrFolder, downloadFile, getFoldersAndFiles, uploadFile } from '../../utils/S3Utils';
 import { FileBreadCrumb } from './FileBreadcrumb';
 
 const objectSets = new Set<string>();
@@ -192,6 +192,15 @@ export const FileMain: FC<FileMainProps> = (props) => {
     }
   };
 
+  const handleDownload = async (object: S3Object) => {
+    await downloadFile(client, bucket, object);
+  };
+
+  const handleDelete = async (object: S3Object) => {
+    await deleteFileOrFolder(client, bucket, object);
+    fetchObjects(ctx.currentPath);
+  };
+
   // initial fetching for files and folders upon opening the page
   useEffect(() => {
     fetchObjects(ctx.currentPath);
@@ -286,7 +295,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
         <Backdrop open={loading} sx={{ position: 'absolute', zIndex: 9999 }}>
           <CircularProgress color="inherit" />
         </Backdrop>
-        {listView && <FileListView objects={objects} permissions={permissions} />}
+        {listView && <FileListView client={client} bucket={bucket} objects={objects} permissions={permissions} onDelete={handleDelete} onDownload={handleDownload} />}
       </div>
       {createFolderDialog}
       {uploadPopup}

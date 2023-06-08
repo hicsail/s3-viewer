@@ -3,10 +3,15 @@ import { S3Object } from '../../types/S3Object';
 import { Table, TableBody, TableContainer, TablePagination } from '@mui/material';
 import EnhancedTableHead from '../EnhancedTableHead';
 import { ObjectRow } from './ObjectRow';
+import { S3Client } from '@aws-sdk/client-s3';
 
 interface FileListViewProps {
+  client: S3Client;
+  bucket: string;
   objects: S3Object[];
   permissions: any;
+  onDelete: (object: S3Object) => void;
+  onDownload: (object: S3Object) => void;
 }
 
 export const FileListView: FC<FileListViewProps> = (props) => {
@@ -83,7 +88,7 @@ export const FileListView: FC<FileListViewProps> = (props) => {
           <EnhancedTableHead onRequestSort={handleRequestSort} columns={columns} sortableIds={['name', 'owner', 'date', 'size']} order={order} orderBy={orderBy} />
           <TableBody>
             {visibleRows.map((object) => (
-              <ObjectRow key={object.location + object.name} object={object} permissions={props.permissions} />
+              <ObjectRow key={object.location + object.name} object={object} permissions={props.permissions} onDelete={props.onDelete} onDownload={props.onDownload} />
             ))}
           </TableBody>
         </Table>

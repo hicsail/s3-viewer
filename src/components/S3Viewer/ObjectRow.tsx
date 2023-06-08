@@ -11,10 +11,13 @@ import { useS3Context } from '../../contexts/s3-context';
 interface ObjectRowProps {
   object: S3Object;
   permissions: any;
+  onDelete: (object: S3Object) => void;
+  onDownload: (object: S3Object) => void;
 }
 
 export const ObjectRow: FC<ObjectRowProps> = (props) => {
   const { object, permissions } = props;
+  const { onDelete: handleDelete, onDownload: handleDownload } = props;
   const ctx = useS3Context();
 
   const name = object.name;
@@ -43,16 +46,6 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
   const handleRename = () => {
     // TODO: implement rename action
     alert('rename');
-  };
-
-  const handleDownload = () => {
-    // TODO: implement download action
-    alert('download');
-  };
-
-  const handleDelete = () => {
-    // TODO: implement delete action
-    alert('delete');
   };
 
   const handleDetails = () => {
@@ -92,14 +85,14 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
       )}
       {permissions.download && (
         <Grid item xs={2}>
-          <IconButton onClick={handleDownload} sx={displayActions ? {} : { visibility: 'hidden' }}>
+          <IconButton onClick={() => handleDownload(object)} sx={displayActions ? {} : { visibility: 'hidden' }}>
             <FileDownloadIcon />
           </IconButton>
         </Grid>
       )}
       {permissions.delete && (
         <Grid item xs={2}>
-          <IconButton onClick={handleDelete} sx={displayActions ? {} : { visibility: 'hidden' }}>
+          <IconButton onClick={() => handleDelete(object)} sx={displayActions ? {} : { visibility: 'hidden' }}>
             <DeleteIcon />
           </IconButton>
         </Grid>
