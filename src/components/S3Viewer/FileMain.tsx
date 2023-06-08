@@ -1,5 +1,7 @@
 import { S3Client } from '@aws-sdk/client-s3';
 import {
+  Alert,
+  AlertColor,
   Backdrop,
   Button,
   CircularProgress,
@@ -14,6 +16,7 @@ import {
   Menu,
   MenuItem,
   Paper,
+  Snackbar,
   TextField,
   Toolbar,
   Tooltip
@@ -51,6 +54,11 @@ export const FileMain: FC<FileMainProps> = (props) => {
   const open = Boolean(anchorEl);
   const [loading, setLoading] = useState(false);
   const [objects, setObjects] = useState<S3Object[]>([]);
+  const [snackBarSettings, setSnackBarSettings] = useState<{ message: string; open: boolean; severity: AlertColor }>({
+    message: '',
+    open: false,
+    severity: 'success'
+  });
 
   // state for creating new folders
   const [newFolderDialogOpen, setNewFolderDialogOpen] = useState(false);
@@ -107,20 +115,39 @@ export const FileMain: FC<FileMainProps> = (props) => {
     let success = true;
     const failedFiles: string[] = [];
     for (let i = 0; i < files.length; i++) {
+      // TODO: pop up overwrite warning if the file already exists
+
       const file = files[i];
       const status = await uploadFile(client, bucket, ctx.currentPath, file);
 
-      success ||= status;
+      success &&= status;
       if (!status) {
         failedFiles.push(file.name);
       }
     }
 
-    // TODO: pop up a full-size status bar on the top of the page
-    // pop up a dialog if there are failed uploads
-
     if (success) {
+      setSnackBarSettings({
+        message: `Successfully uploaded ${files.length} files`,
+        open: true,
+        severity: 'success'
+      });
+
       fetchObjects(ctx.currentPath);
+    } else if (failedFiles.length < files.length) {
+      setSnackBarSettings({
+        message: `Successfully uploaded ${files.length - failedFiles.length} with ${failedFiles.length} ${failedFiles.length === 1 ? 'failure' : 'failures'}`,
+        open: true,
+        severity: 'warning'
+      });
+
+      fetchObjects(ctx.currentPath);
+    } else {
+      setSnackBarSettings({
+        message: `Failed to upload all files`,
+        open: true,
+        severity: 'error'
+      });
     }
   };
 
@@ -242,6 +269,16 @@ export const FileMain: FC<FileMainProps> = (props) => {
         </Backdrop>
         {listView && <FileListView objects={objects} permissions={permissions} />}
       </div>
+      <Snackbar
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        open={snackBarSettings.open}
+        autoHideDuration={5000}
+        onClose={() => setSnackBarSettings({ ...snackBarSettings, open: false })}
+      >
+        <Alert severity={snackBarSettings.severity} sx={{ width: '100%' }}>
+          {snackBarSettings.message}
+        </Alert>
+      </Snackbar>
     </Paper>
   );
 };

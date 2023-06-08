@@ -109,7 +109,9 @@ export const renameFolder = async (client: S3Client, bucketName: string, folderN
 
     return true;
   } catch (error) {
-    throw new Error('Error renaming folder: ' + error);
+    console.error(error);
+
+    return false;
   }
 };
 
