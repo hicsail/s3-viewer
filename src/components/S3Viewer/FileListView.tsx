@@ -30,6 +30,7 @@ export const FileListView: FC<FileListViewProps> = (props) => {
   }, [objects, page, rowsPerPage]);
 
   const columns = [
+    { label: '', id: 'icon' },
     { label: 'Name', id: 'name' },
     { label: 'Owner', id: 'owner' },
     { label: 'Date Modified', id: 'date' },

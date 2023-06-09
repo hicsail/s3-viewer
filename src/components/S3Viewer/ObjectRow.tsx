@@ -7,6 +7,9 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { useS3Context } from '../../contexts/s3-context';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFile } from '@fortawesome/free-regular-svg-icons';
+import { faFolder } from '@fortawesome/free-solid-svg-icons';
 
 interface ObjectRowProps {
   object: S3Object;
@@ -103,6 +106,9 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
 
   return (
     <TableRow hover onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onDoubleClick={handleDoubleClickRow}>
+      <TableCell align="right" padding="none">
+        {object.isFolder ? <FontAwesomeIcon icon={faFolder} size="xl" /> : <FontAwesomeIcon icon={faFile} size="xl" />}
+      </TableCell>
       <TableCell>{name}</TableCell>
       <TableCell>{owner?.name}</TableCell>
       <TableCell>{lastModified}</TableCell>
