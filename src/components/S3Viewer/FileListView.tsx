@@ -4,12 +4,13 @@ import { Table, TableBody, TableContainer, TablePagination } from '@mui/material
 import EnhancedTableHead from '../EnhancedTableHead';
 import { ObjectRow } from './ObjectRow';
 import { S3Client } from '@aws-sdk/client-s3';
+import { Permission } from '../../types/Permission';
 
 interface FileListViewProps {
   client: S3Client;
   bucket: string;
   objects: S3Object[];
-  permissions: any;
+  permissions: Permission;
   onDelete: (object: S3Object) => void;
   onDownload: (object: S3Object) => void;
   onRename: (object: S3Object) => void;

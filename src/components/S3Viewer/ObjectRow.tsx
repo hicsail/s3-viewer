@@ -10,10 +10,11 @@ import { useS3Context } from '../../contexts/s3-context';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFile } from '@fortawesome/free-regular-svg-icons';
 import { faFolder } from '@fortawesome/free-solid-svg-icons';
+import { Permission } from '../../types/Permission';
 
 interface ObjectRowProps {
   object: S3Object;
-  permissions: any;
+  permissions: Permission;
   onDelete: (object: S3Object) => void;
   onDownload: (object: S3Object) => void;
   onRename: (object: S3Object) => void;

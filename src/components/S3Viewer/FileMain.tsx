@@ -32,6 +32,7 @@ import { FileListView } from './FileListView';
 import { useS3Context } from '../../contexts/s3-context';
 import { createFolder, deleteFileOrFolder, downloadFile, getFoldersAndFiles, renameFileOrFolder, uploadFile } from '../../utils/S3Utils';
 import { FileBreadcrumb } from './FileBreadcrumb';
+import { Permission } from '../../types/Permission';
 
 const objectSets = new Set<string>();
 
@@ -39,7 +40,7 @@ interface FileMainProps {
   client: S3Client;
   bucket: string;
   bucketDisplayedName?: string;
-  permissions: any;
+  permissions: Permission;
   onCurrentPathChange?: (currentPath: string) => void;
 }
 
