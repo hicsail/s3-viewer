@@ -4,11 +4,11 @@ import { useS3Context } from '../../contexts/s3-context';
 import StorageIcon from '@mui/icons-material/Storage';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
-interface FileBreadCrumbProps {
+interface FileBreadcrumbProps {
   bucketName?: string;
 }
 
-export const FileBreadCrumb: FC<FileBreadCrumbProps> = (props) => {
+export const FileBreadcrumb: FC<FileBreadcrumbProps> = (props) => {
   const ctx = useS3Context();
 
   const { bucketName } = props;
