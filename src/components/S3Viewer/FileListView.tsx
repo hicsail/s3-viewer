@@ -12,6 +12,7 @@ interface FileListViewProps {
   permissions: any;
   onDelete: (object: S3Object) => void;
   onDownload: (object: S3Object) => void;
+  onRename: (object: S3Object) => void;
 }
 
 export const FileListView: FC<FileListViewProps> = (props) => {
@@ -88,7 +89,14 @@ export const FileListView: FC<FileListViewProps> = (props) => {
           <EnhancedTableHead onRequestSort={handleRequestSort} columns={columns} sortableIds={['name', 'owner', 'date', 'size']} order={order} orderBy={orderBy} />
           <TableBody>
             {visibleRows.map((object) => (
-              <ObjectRow key={object.location + object.name} object={object} permissions={props.permissions} onDelete={props.onDelete} onDownload={props.onDownload} />
+              <ObjectRow
+                key={object.location + object.name}
+                object={object}
+                permissions={props.permissions}
+                onDelete={props.onDelete}
+                onDownload={props.onDownload}
+                onRename={props.onRename}
+              />
             ))}
           </TableBody>
         </Table>

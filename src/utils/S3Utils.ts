@@ -8,12 +8,13 @@ const fileToS3Object = (path: string, object: any): S3Object => {
   return {
     etag: object.ETag,
     name,
-    location: path,
+    location: path.replace(/\/+$/, ''),
     lastModified: object.LastModified,
     versionId: object.VersionId,
     size: object.Size,
     isFolder: object.Key.endsWith('/'),
     owner: object.Owner,
+    ext: name?.split('.').pop(),
     $raw: object
   };
 };
@@ -31,7 +32,7 @@ const folderToS3Object = async (client: S3Client, bucketName: string, path: stri
     return {
       etag: response.ETag,
       name: object.Prefix.split('/').slice(-2, -1)[0],
-      location: path,
+      location: path.replace(/\/+$/, ''),
       lastModified: response.LastModified!,
       versionId: response.VersionId,
       size: response.ContentLength ? response.ContentLength : 0,
@@ -65,11 +66,18 @@ export const createFolder = async (client: S3Client, bucketName: string, path: s
   }
 };
 
+/**
+ * Deletes a file or folder in the specified bucket.
+ * If the object is a folder, all files and folders inside it will be deleted as well.
+ *
+ * @returns a boolean value indicating whether the file or folder was deleted successfully
+ * @throws an error if the file or folder could not be deleted
+ */
 export const deleteFileOrFolder = async (client: S3Client, bucketName: string, object: S3Object): Promise<boolean> => {
   if (object.isFolder) {
     const params = {
       Bucket: bucketName,
-      Prefix: `${object.location}${object.location && '/'}${object.name}`
+      Prefix: `${object.location}${object.location ? '/' : ''}${object.name}`
     };
 
     try {
@@ -107,34 +115,48 @@ export const deleteFileOrFolder = async (client: S3Client, bucketName: string, o
 };
 
 /**
- * Renames a folder in the specified bucket. Space before and after the folder name will be trimmed.
+ * Renames a file or folder in the specified bucket.
  *
- * @returns a boolean value indicating whether the folder was renamed successfully
- * @throws an error if the folder could not be renamed
+ * @returns a boolean value indicating whether the file or folder was renamed successfully
  */
-export const renameFolder = async (client: S3Client, bucketName: string, folderName: string, newFolderName: string, path: string = ''): Promise<boolean> => {
-  const copyParams = {
+export const renameFileOrFolder = async (client: S3Client, bucketName: string, object: S3Object, newName: string): Promise<boolean> => {
+  const sourceParam = {
     Bucket: bucketName,
-    CopySource: `${bucketName}/${folderName.trim() + '/'}`,
-    Key: path ? `${path}/${newFolderName.trim()}/` : `${newFolderName.trim()}/`
-  };
-  const deleteParams = {
-    Bucket: bucketName,
-    Key: path ? `${path}/${folderName.trim()}/` : `${folderName.trim()}/`
+    Prefix: `${object.location}${object.location ? '/' : ''}${object.name}`
   };
 
   try {
-    await client.send(new CopyObjectCommand(copyParams));
-    await client.send(new DeleteObjectCommand(deleteParams));
+    const command = new ListObjectsV2Command(sourceParam);
+    const response = await client.send(command);
+
+    const copyParams = response.Contents?.map((content) => {
+      const sourceKey = `${object.location}${object.location ? '/' : ''}${object.name}`;
+      const newKey = content.Key?.replace(sourceKey, `${object.location}${object.location ? '/' : ''}${newName}`);
+      return {
+        Bucket: bucketName,
+        CopySource: `/${bucketName}/${content.Key}`,
+        Key: newKey
+      };
+    });
+
+    for (const param of copyParams!) {
+      await client.send(new CopyObjectCommand(param));
+    }
+
+    await deleteFileOrFolder(client, bucketName, object);
 
     return true;
   } catch (error) {
-    console.error(error);
-
-    return false;
+    throw new Error('Error renaming folder: ' + error);
   }
 };
 
+/**
+ * Fetch all folders and files at the specified path in the specified bucket.
+ *
+ * @returns an array of S3Object
+ * @throws an error if the folders and files could not be fetched
+ */
 export const getFoldersAndFiles = async (client: S3Client, bucketName: string, path: string = ''): Promise<S3Object[]> => {
   const params = {
     Bucket: bucketName,
@@ -186,6 +208,12 @@ export const uploadFile = async (client: S3Client, bucketName: string, path: str
   }
 };
 
+/**
+ * Downloads a file from the specified bucket.
+ * If the file is a folder, it will not be downloaded.
+ *
+ * @returns a boolean value indicating whether the file was downloaded successfully
+ */
 export const downloadFile = async (client: S3Client, bucketName: string, file: S3Object): Promise<boolean> => {
   if (file.isFolder) {
     console.error('Cannot download a folder');

@@ -13,11 +13,12 @@ interface ObjectRowProps {
   permissions: any;
   onDelete: (object: S3Object) => void;
   onDownload: (object: S3Object) => void;
+  onRename: (object: S3Object) => void;
 }
 
 export const ObjectRow: FC<ObjectRowProps> = (props) => {
   const { object, permissions } = props;
-  const { onDelete: handleDelete, onDownload: handleDownload } = props;
+  const { onDelete: handleDelete, onDownload: handleDownload, onRename: handleRename } = props;
   const ctx = useS3Context();
 
   const name = object.name;
@@ -41,11 +42,6 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
   const handlePreview = () => {
     // TODO: implement preview action
     alert('preview');
-  };
-
-  const handleRename = () => {
-    // TODO: implement rename action
-    alert('rename');
   };
 
   const handleDetails = () => {
@@ -78,7 +74,7 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
       )}
       {permissions.rename && (
         <Grid item xs={2}>
-          <IconButton onClick={handleRename} sx={displayActions ? {} : { visibility: 'hidden' }}>
+          <IconButton onClick={() => handleRename(object)} sx={displayActions ? {} : { visibility: 'hidden' }}>
             <EditIcon />
           </IconButton>
         </Grid>

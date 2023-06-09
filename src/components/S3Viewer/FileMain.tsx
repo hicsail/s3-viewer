@@ -29,7 +29,7 @@ import UploadIcon from '@mui/icons-material/Upload';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import { FileListView } from './FileListView';
 import { useS3Context } from '../../contexts/s3-context';
-import { createFolder, deleteFileOrFolder, downloadFile, getFoldersAndFiles, uploadFile } from '../../utils/S3Utils';
+import { createFolder, deleteFileOrFolder, downloadFile, getFoldersAndFiles, renameFileOrFolder, uploadFile } from '../../utils/S3Utils';
 import { FileBreadCrumb } from './FileBreadcrumb';
 
 const objectSets = new Set<string>();
@@ -60,9 +60,13 @@ export const FileMain: FC<FileMainProps> = (props) => {
     severity: 'success'
   });
 
+  const [selectedObjects, setSelectedObjects] = useState<S3Object[]>([]);
+
   // state for creating new folders
   const [newFolderDialogOpen, setNewFolderDialogOpen] = useState(false);
-  const [newFolderName, setNewFolderName] = useState('');
+  const [newName, setNewName] = useState('');
+  const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+
   const [textFieldError, setTextFieldError] = useState(false);
   const [textFieldHelperText, setTextFieldHelperText] = useState('');
 
@@ -157,33 +161,34 @@ export const FileMain: FC<FileMainProps> = (props) => {
   };
 
   const handleCloseNewFolder = () => {
+    setNewName('');
     setNewFolderDialogOpen(false);
   };
 
-  const handleNewFolderNameChange = (event: any) => {
+  const handleNewNameChange = (event: any) => {
     const newFolderName = event.target.value;
     setTextFieldError(false);
     setTextFieldHelperText('');
 
-    setNewFolderName(newFolderName);
+    setNewName(newFolderName);
   };
 
   const handleNewFolder = async () => {
     // check if the folder name is valid
-    if (newFolderName === '') {
+    if (newName === '') {
       setTextFieldError(true);
       setTextFieldHelperText('Folder name cannot be empty');
-    } else if (objectSets.has(newFolderName)) {
+    } else if (objectSets.has(newName)) {
       setTextFieldError(true);
       setTextFieldHelperText('Folder name already exists');
-    } else if (!isValidS3Key(newFolderName)) {
+    } else if (!isValidS3Key(newName)) {
       setTextFieldError(true);
       setTextFieldHelperText('Illegal folder name');
     } else {
       try {
-        await createFolder(client, bucket, ctx.currentPath, newFolderName);
+        await createFolder(client, bucket, ctx.currentPath, newName);
         setNewFolderDialogOpen(false);
-        setNewFolderName('');
+        setNewName('');
 
         fetchObjects(ctx.currentPath);
       } catch (err) {
@@ -199,6 +204,23 @@ export const FileMain: FC<FileMainProps> = (props) => {
   const handleDelete = async (object: S3Object) => {
     await deleteFileOrFolder(client, bucket, object);
     fetchObjects(ctx.currentPath);
+  };
+
+  const handleRename = async () => {
+    await renameFileOrFolder(client, bucket, selectedObjects[0], newName);
+    setNewName('');
+    setRenameDialogOpen(false);
+    fetchObjects(ctx.currentPath);
+  };
+
+  const handleClickRename = (object: S3Object) => {
+    setSelectedObjects([object]);
+    setRenameDialogOpen(true);
+  };
+
+  const handleCloseRename = () => {
+    setRenameDialogOpen(false);
+    setNewName('');
   };
 
   // initial fetching for files and folders upon opening the page
@@ -221,18 +243,45 @@ export const FileMain: FC<FileMainProps> = (props) => {
         <TextField
           style={{ marginTop: '10px' }}
           label="Folder Name"
-          value={newFolderName}
-          onChange={handleNewFolderNameChange}
+          value={newName}
+          onChange={handleNewNameChange}
           error={textFieldError}
           helperText={textFieldHelperText}
           fullWidth
         />
       </DialogContent>
       <DialogActions>
-        <Button variant="contained" onClick={handleNewFolder} disabled={!Boolean(newFolderName)}>
+        <Button variant="contained" onClick={handleNewFolder} disabled={!Boolean(newName)}>
           Create
         </Button>
         <Button variant="outlined" color="error" onClick={handleCloseNewFolder}>
+          Cancel
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+
+  const renameDialog = (
+    <Dialog open={renameDialogOpen} fullWidth>
+      <DialogTitle>Rename {selectedObjects[0]?.isFolder ? 'Folder' : 'File'}</DialogTitle>
+      <DialogContent>
+        <TextField
+          style={{ marginTop: '10px' }}
+          label="Folder Name"
+          InputLabelProps={{ shrink: true }}
+          placeholder={selectedObjects[0]?.name}
+          value={newName}
+          onChange={handleNewNameChange}
+          error={textFieldError}
+          helperText={textFieldHelperText}
+          fullWidth
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button variant="contained" onClick={handleRename} disabled={!Boolean(newName)}>
+          Rename
+        </Button>
+        <Button variant="outlined" color="error" onClick={handleCloseRename}>
           Cancel
         </Button>
       </DialogActions>
@@ -295,9 +344,20 @@ export const FileMain: FC<FileMainProps> = (props) => {
         <Backdrop open={loading} sx={{ position: 'absolute', zIndex: 9999 }}>
           <CircularProgress color="inherit" />
         </Backdrop>
-        {listView && <FileListView client={client} bucket={bucket} objects={objects} permissions={permissions} onDelete={handleDelete} onDownload={handleDownload} />}
+        {listView && (
+          <FileListView
+            client={client}
+            bucket={bucket}
+            objects={objects}
+            permissions={permissions}
+            onDelete={handleDelete}
+            onDownload={handleDownload}
+            onRename={handleClickRename}
+          />
+        )}
       </div>
       {createFolderDialog}
+      {renameDialog}
       {uploadPopup}
     </Paper>
   );
