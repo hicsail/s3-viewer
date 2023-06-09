@@ -8,6 +8,7 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
   Grid,
   IconButton,
@@ -62,10 +63,11 @@ export const FileMain: FC<FileMainProps> = (props) => {
 
   const [selectedObjects, setSelectedObjects] = useState<S3Object[]>([]);
 
-  // state for creating new folders
+  // state for dialogs
   const [newFolderDialogOpen, setNewFolderDialogOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const [textFieldError, setTextFieldError] = useState(false);
   const [textFieldHelperText, setTextFieldHelperText] = useState('');
@@ -197,19 +199,35 @@ export const FileMain: FC<FileMainProps> = (props) => {
     }
   };
 
+  // handlers for downloading
   const handleDownload = async (object: S3Object) => {
     await downloadFile(client, bucket, object);
   };
 
-  const handleDelete = async (object: S3Object) => {
-    await deleteFileOrFolder(client, bucket, object);
+  // handlers for deleting
+  const handleClickDelete = (object: S3Object) => {
+    setDeleteDialogOpen(true);
+    setSelectedObjects([object]);
+  };
+
+  const handleDelete = async () => {
+    await deleteFileOrFolder(client, bucket, selectedObjects[0]);
+    setDeleteDialogOpen(false);
+    setSelectedObjects([]);
     fetchObjects(ctx.currentPath);
   };
 
+  const handleCloseDelete = () => {
+    setDeleteDialogOpen(false);
+    setSelectedObjects([]);
+  };
+
+  // handlers for renaming
   const handleRename = async () => {
     await renameFileOrFolder(client, bucket, selectedObjects[0], newName);
     setNewName('');
     setRenameDialogOpen(false);
+    setSelectedObjects([]);
     fetchObjects(ctx.currentPath);
   };
 
@@ -220,6 +238,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
 
   const handleCloseRename = () => {
     setRenameDialogOpen(false);
+    setSelectedObjects([]);
     setNewName('');
   };
 
@@ -288,6 +307,25 @@ export const FileMain: FC<FileMainProps> = (props) => {
     </Dialog>
   );
 
+  const deleteDialog = (
+    <Dialog open={deleteDialogOpen} fullWidth>
+      <DialogContent>
+        <DialogContentText>
+          Are you sure you want to permanently delete {selectedObjects[0]?.name}?{' '}
+          <b>{selectedObjects[0]?.isFolder ? 'All files and folders inside will be deleted as well.' : ''}</b>
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button variant="contained" color="error" onClick={handleDelete}>
+          Delete
+        </Button>
+        <Button variant="outlined" color="secondary" onClick={handleCloseDelete}>
+          Abort
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+
   const uploadPopup = (
     <Snackbar
       anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
@@ -350,7 +388,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
             bucket={bucket}
             objects={objects}
             permissions={permissions}
-            onDelete={handleDelete}
+            onDelete={handleClickDelete}
             onDownload={handleDownload}
             onRename={handleClickRename}
           />
@@ -358,6 +396,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
       </div>
       {createFolderDialog}
       {renameDialog}
+      {deleteDialog}
       {uploadPopup}
     </Paper>
   );
