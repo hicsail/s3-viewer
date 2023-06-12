@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { S3Viewer } from './S3Viewer';
 import { S3Client } from '@aws-sdk/client-s3';
+import {DocViewPlugin} from '../../utils/plugin/plugins/doc-viewer';
 
 const meta: Meta<typeof S3Viewer> = {
   title: 'S3 Viewer',
@@ -35,6 +36,7 @@ Primary.args = {
       secretAccessKey: import.meta.env.VITE_TEST_AWS_SECRET
     }
   }),
+  plugins: [new DocViewPlugin()],
   bucket: import.meta.env.VITE_TEST_BUCKET_NAME,
   bucketDisplayedName: 'Test Bucket',
   disableActions: false,

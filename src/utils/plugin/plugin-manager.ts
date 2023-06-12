@@ -22,9 +22,10 @@ export class PluginManager {
     // make a new list
     for (const plugin of plugins) {
       for (const fileExtension of plugin.fileExtensions) {
-        if (this.pluginMapping.has(fileExtension)) {
+        if (!this.pluginMapping.has(fileExtension)) {
           this.pluginMapping.set(fileExtension, [plugin]);
         } else {
+          console.log(this.pluginMapping);
           this.pluginMapping.get(fileExtension)!.push(plugin);
         }
       }
@@ -33,5 +34,9 @@ export class PluginManager {
 
   getPlugins(fileExtension: string): Plugin[] | undefined {
     return this.pluginMapping.get(fileExtension);
+  }
+
+  hasPlugin(fileExtension: string): boolean {
+    return this.pluginMapping.has(fileExtension);
   }
 }

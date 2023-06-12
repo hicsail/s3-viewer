@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactElement } from 'react';
 
 /**
  * Definition of a Plugin. Represents the expected form of all plugins that
@@ -10,7 +10,7 @@ export interface Plugin {
   /** Description of the plugin in a human readable format */
   description: string;
   /** The React view of the plugin */
-  component: ReactNode;
+  component: ReactElement;
   /** File extensions the plugin is associated with */
   fileExtensions: string[];
 }
