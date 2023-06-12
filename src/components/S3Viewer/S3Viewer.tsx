@@ -2,10 +2,13 @@ import { FC } from 'react';
 import { FileMain } from './FileMain';
 import { S3Client } from '@aws-sdk/client-s3';
 import { S3Provider } from '../../contexts/s3-context';
+import { PluginManagerProvider} from '../../context/plugins.context';
+import { Plugin } from '../../utils/plugin/plugin';
 
 interface S3ViewerProps {
   client: S3Client;
   bucket: string;
+  plugins?: Plugin[];
   bucketDisplayedName?: string;
   onCurrentPathChange?: (currentPath: string) => void;
   disableActions?: boolean;
@@ -36,13 +39,15 @@ export const S3Viewer: FC<S3ViewerProps> = (props) => {
 
   return (
     <S3Provider>
-      <FileMain
-        client={props.client}
-        bucket={props.bucket}
-        bucketDisplayedName={props.bucketDisplayedName}
-        permissions={permissions}
-        onCurrentPathChange={props.onCurrentPathChange}
-      />
+      <PluginManagerProvider plugins={props.plugins || []}>
+        <FileMain
+          client={props.client}
+          bucket={props.bucket}
+          bucketDisplayedName={props.bucketDisplayedName}
+          permissions={permissions}
+          onCurrentPathChange={props.onCurrentPathChange}
+        />
+      </PluginManagerProvider>
     </S3Provider>
   );
 };
