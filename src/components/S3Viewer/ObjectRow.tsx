@@ -73,7 +73,7 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
 
   const actions = (
     <Grid container justifyContent="center" alignItems="center">
-      {(permissions.preview && pluginManager.hasPlugin(props.object.ext)) && (
+      {permissions.preview && pluginManager.hasPlugin(props.object.ext) && (
         <Grid item xs={2}>
           <IconButton onClick={handlePreview} sx={displayActions ? {} : { visibility: 'hidden' }}>
             <PreviewIcon />
@@ -106,9 +106,7 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
           <MoreHorizIcon />
         </IconButton>
       </Grid>
-      {pluginManager.hasPlugin(props.object.ext) && (
-        <PluginView plugin={pluginManager.getPlugins(props.object.ext!)![0]} open={openModal} setOpen={setOpenModal} object={object} />
-      )}
+      {pluginManager.hasPlugin(props.object.ext) && <PluginView plugin={pluginManager.getPlugins(props.object.ext!)![0]} open={openModal} setOpen={setOpenModal} object={object} />}
     </Grid>
   );
 
