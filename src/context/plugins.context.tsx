@@ -15,9 +15,5 @@ export const PluginManagerProvider: FC<PluginManagerProviderProps> = (props) => 
   const pluginManager = new PluginManager();
   pluginManager.registerPlugins(props.plugins);
 
-  return (
-    <PluginManagerContext.Provider value={pluginManager}>
-      {props.children}
-    </PluginManagerContext.Provider>
-  );
+  return <PluginManagerContext.Provider value={pluginManager}>{props.children}</PluginManagerContext.Provider>;
 };

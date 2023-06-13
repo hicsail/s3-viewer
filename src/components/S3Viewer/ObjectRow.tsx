@@ -12,7 +12,7 @@ import { faFile } from '@fortawesome/free-regular-svg-icons';
 import { faFolder } from '@fortawesome/free-solid-svg-icons';
 import { Permission } from '../../types/Permission';
 import { PluginManagerContext } from '../../context/plugins.context';
-import {PluginView} from '../../utils/plugin/plugin-view';
+import { PluginView } from '../../utils/plugin/plugin-view';
 
 interface ObjectRowProps {
   object: S3Object;
@@ -108,9 +108,7 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
           <MoreHorizIcon />
         </IconButton>
       </Grid>
-      {(props.object.ext && pluginManager.hasPlugin(props.object.ext)) && (
-        <PluginView plugin={pluginManager.getPlugins(props.object.ext!)![0]} open={openModal} object={object} />
-      )}
+      {props.object.ext && pluginManager.hasPlugin(props.object.ext) && <PluginView plugin={pluginManager.getPlugins(props.object.ext!)![0]} open={openModal} object={object} />}
     </Grid>
   );
 

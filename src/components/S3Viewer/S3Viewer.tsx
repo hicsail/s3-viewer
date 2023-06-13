@@ -2,7 +2,7 @@ import { FC } from 'react';
 import { FileMain } from './FileMain';
 import { S3Client } from '@aws-sdk/client-s3';
 import { S3Provider } from '../../contexts/s3-context';
-import { PluginManagerProvider} from '../../context/plugins.context';
+import { PluginManagerProvider } from '../../context/plugins.context';
 import { Plugin } from '../../utils/plugin/plugin';
 
 interface S3ViewerProps {

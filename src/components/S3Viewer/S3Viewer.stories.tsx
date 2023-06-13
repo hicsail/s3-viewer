@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { S3Viewer } from './S3Viewer';
 import { S3Client } from '@aws-sdk/client-s3';
-import {DocViewPlugin} from '../../utils/plugin/plugins/doc-viewer';
+import { DocViewPlugin } from '../../utils/plugin/plugins/doc-viewer';
 
 const meta: Meta<typeof S3Viewer> = {
   title: 'S3 Viewer',
