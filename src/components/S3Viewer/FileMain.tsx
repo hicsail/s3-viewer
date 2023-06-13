@@ -100,11 +100,15 @@ export const FileMain: FC<FileMainProps> = (props) => {
       // TODO: pop up overwrite warning if the file already exists
 
       const file = files[i];
-      const status = await uploadFile(client, bucket, ctx.currentPath, file);
-
-      success &&= status;
-      if (!status) {
+      if (isValidS3Key(file.name)) {
+        const status = await uploadFile(client, bucket, ctx.currentPath, file);
+        if (!status) {
+          failedFiles.push(file.name);
+          success &&= status;
+        }
+      } else {
         failedFiles.push(file.name);
+        success = false;
       }
     }
 
@@ -188,6 +192,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
     setIsOverDropZone(false);
 
     await uploadObjects(event.dataTransfer.files);
+    draggingIndex.current = 0;
   };
 
   // handlers for creating new folders
@@ -375,7 +380,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
   return (
     <Box sx={{ position: 'relative' }}>
       <Paper onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDragOver={(e) => e.preventDefault()} onDrop={handleDragDrop}>
-        <FileDropZone isOverDropZone={isOverDropZone} />
+        {isOverDropZone && <FileDropZone />}
         <Toolbar>
           <FileBreadcrumb bucketName={bucketDisplayedName ? bucketDisplayedName : bucket} />
           <Grid container spacing={1} justifyContent="end">
