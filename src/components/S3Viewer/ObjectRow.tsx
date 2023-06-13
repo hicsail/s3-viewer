@@ -49,8 +49,6 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
   };
 
   const handlePreview = () => {
-    // TODO: implement preview action
-    alert('preview');
     setOpenModal(true);
   };
 
@@ -75,7 +73,7 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
 
   const actions = (
     <Grid container justifyContent="center" alignItems="center">
-      {permissions.preview && (
+      {(permissions.preview && pluginManager.hasPlugin(props.object.ext)) && (
         <Grid item xs={2}>
           <IconButton onClick={handlePreview} sx={displayActions ? {} : { visibility: 'hidden' }}>
             <PreviewIcon />
@@ -108,7 +106,9 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
           <MoreHorizIcon />
         </IconButton>
       </Grid>
-      {props.object.ext && pluginManager.hasPlugin(props.object.ext) && <PluginView plugin={pluginManager.getPlugins(props.object.ext!)![0]} open={openModal} object={object} />}
+      {pluginManager.hasPlugin(props.object.ext) && (
+        <PluginView plugin={pluginManager.getPlugins(props.object.ext!)![0]} open={openModal} object={object} />
+      )}
     </Grid>
   );
 

@@ -36,7 +36,11 @@ export class PluginManager {
     return this.pluginMapping.get(fileExtension);
   }
 
-  hasPlugin(fileExtension: string): boolean {
+  hasPlugin(fileExtension: string | undefined): boolean {
+    if (!fileExtension) {
+      return false;
+    }
+
     return this.pluginMapping.has(fileExtension);
   }
 }
