@@ -38,7 +38,7 @@ export const S3Viewer: FC<S3ViewerProps> = (props) => {
   };
 
   return (
-    <S3Provider>
+    <S3Provider client={props.client} bucket={props.bucket}>
       <PluginManagerProvider plugins={props.plugins || []}>
         <FileMain
           client={props.client}

@@ -1,4 +1,5 @@
-import { ReactElement, ReactNode } from 'react';
+import { ReactNode } from 'react';
+import { S3Object } from '../../types/S3Object';
 
 /**
  * Definition of a Plugin. Represents the expected form of all plugins that
@@ -9,10 +10,8 @@ export interface Plugin {
   name: string;
   /** Description of the plugin in a human readable format */
   description: string;
-  /** The React view of the plugin */
-  component: ReactNode;
   /** File extensions the plugin is associated with */
   fileExtensions: string[];
-
-  getView(): ReactNode;
+  /** Get the view to show up in the modal */
+  getView(object: S3Object): ReactNode;
 }

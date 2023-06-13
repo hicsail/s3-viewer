@@ -109,7 +109,7 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
         </IconButton>
       </Grid>
       {(props.object.ext && pluginManager.hasPlugin(props.object.ext)) && (
-        <PluginView plugin={pluginManager.getPlugins(props.object.ext!)![0]} open={openModal} />
+        <PluginView plugin={pluginManager.getPlugins(props.object.ext!)![0]} open={openModal} object={object} />
       )}
     </Grid>
   );

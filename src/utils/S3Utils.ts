@@ -195,7 +195,9 @@ export const uploadFile = async (client: S3Client, bucketName: string, path: str
   const params = {
     Bucket: bucketName,
     Key: path ? `${path}/${file.name.trim()}` : `${file.name.trim()}`,
-    Body: file
+    Body: file,
+    // TODO: Determine content type
+    ContentType: 'application/pdf'
   };
 
   try {
