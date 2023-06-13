@@ -3,6 +3,7 @@ import {
   Alert,
   AlertColor,
   Backdrop,
+  Box,
   Button,
   CircularProgress,
   Dialog,
@@ -22,7 +23,7 @@ import {
   Toolbar,
   Tooltip
 } from '@mui/material';
-import { FC, MouseEvent, useEffect, useState } from 'react';
+import { FC, MouseEvent, useEffect, useRef, useState } from 'react';
 import { S3Object } from '../../types/S3Object';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import GridViewIcon from '@mui/icons-material/GridView';
@@ -33,6 +34,7 @@ import { useS3Context } from '../../contexts/s3-context';
 import { createFolder, deleteFileOrFolder, downloadFile, getFoldersAndFiles, renameFileOrFolder, uploadFile } from '../../utils/S3Utils';
 import { FileBreadcrumb } from './FileBreadcrumb';
 import { Permission } from '../../types/Permission';
+import { FileDropZone } from './FileDropZone';
 
 const objectSets = new Set<string>();
 
@@ -72,6 +74,8 @@ export const FileMain: FC<FileMainProps> = (props) => {
 
   const [textFieldError, setTextFieldError] = useState(false);
   const [textFieldHelperText, setTextFieldHelperText] = useState('');
+  const [isOverDropZone, setIsOverDropZone] = useState(false);
+  const draggingIndex = useRef(0);
 
   const fetchObjects = async (path: string) => {
     setLoading(true);
@@ -89,36 +93,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
     setLoading(false);
   };
 
-  // ########################################
-  // #### Handler functions for actions #####
-  // ########################################
-
-  // open the menu for switching between list and grid view
-  const handleClickSwitchView = (event: MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleCloseSwitchView = () => {
-    setAnchorEl(null);
-  };
-
-  const handleClickListView = () => {
-    setListView(true);
-    handleCloseSwitchView();
-  };
-
-  const handleClickGridView = () => {
-    setListView(false);
-    handleCloseSwitchView();
-  };
-
-  // handler for uploading files
-  const handleClickUpload = async (event: any) => {
-    const files = event.target.files;
-    if (!files) {
-      return;
-    }
-
+  const uploadObjects = async (files: File[]) => {
     let success = true;
     const failedFiles: string[] = [];
     for (let i = 0; i < files.length; i++) {
@@ -156,6 +131,63 @@ export const FileMain: FC<FileMainProps> = (props) => {
         severity: 'error'
       });
     }
+  };
+
+  // ########################################
+  // #### Handler functions for actions #####
+  // ########################################
+
+  // open the menu for switching between list and grid view
+  const handleClickSwitchView = (event: MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseSwitchView = () => {
+    setAnchorEl(null);
+  };
+
+  const handleClickListView = () => {
+    setListView(true);
+    handleCloseSwitchView();
+  };
+
+  const handleClickGridView = () => {
+    setListView(false);
+    handleCloseSwitchView();
+  };
+
+  // handler for uploading files
+  const handleClickUpload = async (event: any) => {
+    const files = event.target.files;
+    if (!files) {
+      return;
+    }
+
+    await uploadObjects(files);
+  };
+
+  // handler for drag-n-drop uploading
+  const handleDragEnter = (event: any) => {
+    event.preventDefault();
+    if (draggingIndex.current === 0) {
+      setIsOverDropZone(true);
+    }
+    draggingIndex.current++;
+  };
+
+  const handleDragLeave = (event: any) => {
+    event.preventDefault();
+    if (draggingIndex.current === 1) {
+      setIsOverDropZone(false);
+    }
+    draggingIndex.current--;
+  };
+
+  const handleDragDrop = async (event: any) => {
+    event.preventDefault();
+    setIsOverDropZone(false);
+
+    await uploadObjects(event.dataTransfer.files);
   };
 
   // handlers for creating new folders
@@ -341,65 +373,68 @@ export const FileMain: FC<FileMainProps> = (props) => {
   );
 
   return (
-    <Paper>
-      <Toolbar>
-        <FileBreadcrumb bucketName={bucketDisplayedName ? bucketDisplayedName : bucket} />
-        <Grid container spacing={1} justifyContent="end">
-          {permissions.upload && (
-            <Grid item>
-              <Button startIcon={<UploadIcon />} component="label">
-                Upload
-                <input hidden multiple type="file" onChange={handleClickUpload} />
-              </Button>
-            </Grid>
+    <Box sx={{ position: 'relative' }}>
+      <Paper onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDragOver={(e) => e.preventDefault()} onDrop={handleDragDrop}>
+        <FileDropZone isOverDropZone={isOverDropZone} />
+        <Toolbar>
+          <FileBreadcrumb bucketName={bucketDisplayedName ? bucketDisplayedName : bucket} />
+          <Grid container spacing={1} justifyContent="end">
+            {permissions.upload && (
+              <Grid item>
+                <Button startIcon={<UploadIcon />} component="label">
+                  Upload
+                  <input hidden multiple type="file" onChange={handleClickUpload} />
+                </Button>
+              </Grid>
+            )}
+            {permissions.createFolder && (
+              <Grid item>
+                <Button onClick={handleClickNewFolder} startIcon={<CreateNewFolderIcon />}>
+                  New Folder
+                </Button>
+              </Grid>
+            )}
+          </Grid>
+          <Tooltip title="Switch View" placement="top-end">
+            <IconButton onClick={handleClickSwitchView}>{listView ? <FormatListBulletedIcon /> : <GridViewIcon />}</IconButton>
+          </Tooltip>
+          <Menu id="view-type-menu" anchorEl={anchorEl} open={open} onClose={handleCloseSwitchView}>
+            <MenuItem onClick={handleClickListView}>
+              <ListItemIcon>
+                <FormatListBulletedIcon />
+              </ListItemIcon>
+              <ListItemText>List View</ListItemText>
+            </MenuItem>
+            <MenuItem onClick={handleClickGridView}>
+              <ListItemIcon>
+                <GridViewIcon />
+              </ListItemIcon>
+              <ListItemText>Grid View</ListItemText>
+            </MenuItem>
+          </Menu>
+        </Toolbar>
+        <div style={{ position: 'relative' }}>
+          <Backdrop open={loading} sx={{ position: 'absolute', zIndex: 9999 }}>
+            <CircularProgress color="inherit" />
+          </Backdrop>
+          {listView && (
+            <FileListView
+              client={client}
+              bucket={bucket}
+              objects={objects}
+              permissions={permissions}
+              onDelete={handleClickDelete}
+              onDownload={handleDownload}
+              onRename={handleClickRename}
+            />
           )}
-          {permissions.createFolder && (
-            <Grid item>
-              <Button onClick={handleClickNewFolder} startIcon={<CreateNewFolderIcon />}>
-                New Folder
-              </Button>
-            </Grid>
-          )}
-        </Grid>
-        <Tooltip title="Switch View" placement="top-end">
-          <IconButton onClick={handleClickSwitchView}>{listView ? <FormatListBulletedIcon /> : <GridViewIcon />}</IconButton>
-        </Tooltip>
-        <Menu id="view-type-menu" anchorEl={anchorEl} open={open} onClose={handleCloseSwitchView}>
-          <MenuItem onClick={handleClickListView}>
-            <ListItemIcon>
-              <FormatListBulletedIcon />
-            </ListItemIcon>
-            <ListItemText>List View</ListItemText>
-          </MenuItem>
-          <MenuItem onClick={handleClickGridView}>
-            <ListItemIcon>
-              <GridViewIcon />
-            </ListItemIcon>
-            <ListItemText>Grid View</ListItemText>
-          </MenuItem>
-        </Menu>
-      </Toolbar>
-      <div style={{ position: 'relative' }}>
-        <Backdrop open={loading} sx={{ position: 'absolute', zIndex: 9999 }}>
-          <CircularProgress color="inherit" />
-        </Backdrop>
-        {listView && (
-          <FileListView
-            client={client}
-            bucket={bucket}
-            objects={objects}
-            permissions={permissions}
-            onDelete={handleClickDelete}
-            onDownload={handleDownload}
-            onRename={handleClickRename}
-          />
-        )}
-      </div>
-      {createFolderDialog}
-      {renameDialog}
-      {deleteDialog}
-      {uploadPopup}
-    </Paper>
+        </div>
+        {createFolderDialog}
+        {renameDialog}
+        {deleteDialog}
+        {uploadPopup}
+      </Paper>
+    </Box>
   );
 };
 
