@@ -1,5 +1,5 @@
 import { Plugin } from '../plugin';
-import { ReactElement, FC } from 'react';
+import { ReactElement, FC, ReactNode } from 'react';
 
 export class DocViewPlugin implements Plugin {
   name: string;
@@ -14,6 +14,10 @@ export class DocViewPlugin implements Plugin {
     this.fileExtensions = ['bmp', 'csv', 'odt', 'doc', 'docx', 'gif', 'jpg',
                            'jpeg', 'pdf', 'png', 'ppt', 'pptx', 'tiff', 'txt',
                            'xls', 'xlsx'];
+  }
+
+  getView(): ReactNode {
+    return <DocViewComponent />;
   }
 }
 

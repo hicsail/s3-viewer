@@ -15,7 +15,9 @@ export const PluginView: FC<PluginViewProps> = (props) => {
 
   return (
     <Modal open={props.open} onClose={onClose}>
-      {props.plugin.component}
+      <>
+        {props.plugin.getView()}
+      </>
     </Modal>
   );
 };
