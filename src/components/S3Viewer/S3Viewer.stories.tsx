@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { S3Viewer } from './S3Viewer';
 import { S3Client } from '@aws-sdk/client-s3';
+import { DocViewPlugin } from '../Plugin/DocViewer';
 
 const meta: Meta<typeof S3Viewer> = {
   title: 'S3 Viewer',
@@ -28,11 +29,14 @@ export const Primary: Story = (args: any) => <S3Viewer {...args} />;
 Primary.args = {
   client: new S3Client({
     region: import.meta.env.VITE_TEST_BUCKET_REGION,
+    endpoint: import.meta.env.VITE_TEST_ENDPOINT || undefined,
+    forcePathStyle: import.meta.env.VITE_TEST_FORCE_PATH_STYLE === 'true',
     credentials: {
       accessKeyId: import.meta.env.VITE_TEST_AWS_KEY,
       secretAccessKey: import.meta.env.VITE_TEST_AWS_SECRET
     }
   }),
+  plugins: [new DocViewPlugin()],
   bucket: import.meta.env.VITE_TEST_BUCKET_NAME,
   bucketDisplayedName: 'Test Bucket',
   disableActions: false,

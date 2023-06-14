@@ -1,4 +1,4 @@
-import { FC, MouseEvent, useState } from 'react';
+import { FC, MouseEvent, useState, useContext } from 'react';
 import { Grid, IconButton, TableCell, TableRow } from '@mui/material';
 import { S3Object } from '../../types/S3Object';
 import PreviewIcon from '@mui/icons-material/Preview';
@@ -11,6 +11,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFile } from '@fortawesome/free-regular-svg-icons';
 import { faFolder } from '@fortawesome/free-solid-svg-icons';
 import { Permission } from '../../types/Permission';
+import { PluginManagerContext } from '../../context/plugins.context';
+import { PluginView } from '../Plugin/PluginView';
 
 interface ObjectRowProps {
   object: S3Object;
@@ -24,11 +26,14 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
   const { object, permissions } = props;
   const { onDelete: handleDelete, onDownload: handleDownload, onRename: handleRename } = props;
   const ctx = useS3Context();
+  const pluginManager = useContext(PluginManagerContext);
 
   const name = object.name;
   const owner = object.owner;
   const lastModified = object.lastModified.toLocaleString();
   const size = formatBytes(object.size);
+
+  const [openModal, setOpenModal] = useState<boolean>(false);
 
   const [displayActions, setDisplayActions] = useState<boolean>(false);
 
@@ -44,8 +49,7 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
   };
 
   const handlePreview = () => {
-    // TODO: implement preview action
-    alert('preview');
+    setOpenModal(true);
   };
 
   const handleDetails = () => {
@@ -69,7 +73,7 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
 
   const actions = (
     <Grid container justifyContent="center" alignItems="center">
-      {permissions.preview && (
+      {permissions.preview && pluginManager.hasPlugin(props.object.ext) && (
         <Grid item xs={2}>
           <IconButton onClick={handlePreview} sx={displayActions ? {} : { visibility: 'hidden' }}>
             <PreviewIcon />
@@ -102,6 +106,10 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
           <MoreHorizIcon />
         </IconButton>
       </Grid>
+      {
+        // TODO: In the future support multiple plugins
+        pluginManager.hasPlugin(props.object.ext) && <PluginView plugin={pluginManager.getPlugins(props.object.ext!)![0]} open={openModal} setOpen={setOpenModal} object={object} />
+      }
     </Grid>
   );
 
