@@ -1,6 +1,5 @@
 import { createContext, FC, ReactNode } from 'react';
-import { PluginManager } from '../utils/plugin/plugin-manager';
-import { Plugin } from '../utils/plugin/plugin';
+import { Plugin, PluginManager } from '../types/Plugin';
 
 // Create the context, no default value so the provider is needed
 export const PluginManagerContext = createContext<PluginManager>({} as any);

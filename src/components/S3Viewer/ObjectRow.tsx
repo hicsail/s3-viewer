@@ -12,7 +12,7 @@ import { faFile } from '@fortawesome/free-regular-svg-icons';
 import { faFolder } from '@fortawesome/free-solid-svg-icons';
 import { Permission } from '../../types/Permission';
 import { PluginManagerContext } from '../../context/plugins.context';
-import { PluginView } from '../../utils/plugin/plugin-view';
+import { PluginView } from '../Plugin/PluginView';
 
 interface ObjectRowProps {
   object: S3Object;

@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Plugin } from './plugin';
+import { Plugin } from '../../types/Plugin';
 import { Box, IconButton, Modal } from '@mui/material';
 import { S3Object } from '../../types/S3Object';
 import CloseIcon from '@mui/icons-material/Close';
