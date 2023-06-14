@@ -34,6 +34,7 @@ import { useS3Context } from '../../contexts/s3-context';
 import { createFolder, deleteFileOrFolder, downloadFile, getFoldersAndFiles, renameFileOrFolder, uploadFile } from '../../utils/S3Utils';
 import { FileBreadcrumb } from './FileBreadcrumb';
 import { Permission } from '../../types/Permission';
+import { FileSearch } from './FileSearch';
 import { FileDropZone } from './FileDropZone';
 
 const objectSets = new Set<string>();
@@ -384,6 +385,9 @@ export const FileMain: FC<FileMainProps> = (props) => {
         <Toolbar>
           <FileBreadcrumb bucketName={bucketDisplayedName ? bucketDisplayedName : bucket} />
           <Grid container spacing={1} justifyContent="end">
+            {/* <Grid item>
+            <FileSearch client={client} bucket={bucket} />
+          </Grid> */}
             {permissions.upload && (
               <Grid item>
                 <Button startIcon={<UploadIcon />} component="label">
