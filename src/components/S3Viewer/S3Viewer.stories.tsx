@@ -29,8 +29,8 @@ export const Primary: Story = (args: any) => <S3Viewer {...args} />;
 Primary.args = {
   client: new S3Client({
     region: import.meta.env.VITE_TEST_BUCKET_REGION,
-    endpoint: import.meta.env.VITE_TEST_ENDPOINT,
-    forcePathStyle: true,
+    endpoint: import.meta.env.VITE_TEST_ENDPOINT || undefined,
+    forcePathStyle: import.meta.env.VITE_TEST_FORCE_PATH_STYLE === 'true',
     credentials: {
       accessKeyId: import.meta.env.VITE_TEST_AWS_KEY,
       secretAccessKey: import.meta.env.VITE_TEST_AWS_SECRET

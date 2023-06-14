@@ -29,6 +29,7 @@ const DocViewWrapper: FC<{ object: S3Object }> = ({ object }) => {
   useEffect(() => {
     const getURI = async () => {
       const objCmd = new GetObjectCommand({ Bucket: bucket, Key: object.$raw.Key });
+      // TODO: Will need to evalulate if the `getSignedUrl` will function with Cargo
       const uri = await getSignedUrl(client, objCmd);
       setDocs([{ uri }]);
     };
