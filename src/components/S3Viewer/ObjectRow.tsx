@@ -106,7 +106,10 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
           <MoreHorizIcon />
         </IconButton>
       </Grid>
-      {pluginManager.hasPlugin(props.object.ext) && <PluginView plugin={pluginManager.getPlugins(props.object.ext!)![0]} open={openModal} setOpen={setOpenModal} object={object} />}
+      {
+        // TODO: In the future support multiple plugins
+        pluginManager.hasPlugin(props.object.ext) && <PluginView plugin={pluginManager.getPlugins(props.object.ext!)![0]} open={openModal} setOpen={setOpenModal} object={object} />
+      }
     </Grid>
   );
 
