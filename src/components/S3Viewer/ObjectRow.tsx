@@ -107,9 +107,7 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
 
   return (
     <TableRow hover onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onDoubleClick={handleDoubleClickRow}>
-      <TableCell align="right" padding="none">
-        {object.isFolder ? <FontAwesomeIcon icon={faFolder} size="xl" /> : <FontAwesomeIcon icon={faFile} size="xl" />}
-      </TableCell>
+      <TableCell align="center">{object.isFolder ? <FontAwesomeIcon icon={faFolder} size="xl" /> : <FontAwesomeIcon icon={faFile} size="xl" />}</TableCell>
       <TableCell>{name}</TableCell>
       <TableCell>{owner?.name}</TableCell>
       <TableCell>{lastModified}</TableCell>

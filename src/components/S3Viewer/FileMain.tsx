@@ -3,6 +3,7 @@ import {
   Alert,
   AlertColor,
   Backdrop,
+  Box,
   Button,
   CircularProgress,
   Dialog,
@@ -22,7 +23,7 @@ import {
   Toolbar,
   Tooltip
 } from '@mui/material';
-import { FC, MouseEvent, useEffect, useState } from 'react';
+import { FC, MouseEvent, useEffect, useRef, useState } from 'react';
 import { S3Object } from '../../types/S3Object';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import GridViewIcon from '@mui/icons-material/GridView';
@@ -33,6 +34,7 @@ import { useS3Context } from '../../contexts/s3-context';
 import { createFolder, deleteFileOrFolder, downloadFile, getFoldersAndFiles, renameFileOrFolder, uploadFile } from '../../utils/S3Utils';
 import { FileBreadcrumb } from './FileBreadcrumb';
 import { Permission } from '../../types/Permission';
+import { FileDropZone } from './FileDropZone';
 
 const objectSets = new Set<string>();
 
@@ -72,6 +74,8 @@ export const FileMain: FC<FileMainProps> = (props) => {
 
   const [textFieldError, setTextFieldError] = useState(false);
   const [textFieldHelperText, setTextFieldHelperText] = useState('');
+  const [isOverDropZone, setIsOverDropZone] = useState(false);
+  const draggingIndex = useRef(0);
 
   const fetchObjects = async (path: string) => {
     setLoading(true);
@@ -87,6 +91,50 @@ export const FileMain: FC<FileMainProps> = (props) => {
       objectSets.add(object.name);
     });
     setLoading(false);
+  };
+
+  const uploadObjects = async (files: File[]) => {
+    let success = true;
+    const failedFiles: string[] = [];
+    for (let i = 0; i < files.length; i++) {
+      // TODO: pop up overwrite warning if the file already exists
+
+      const file = files[i];
+      if (isValidS3Key(file.name)) {
+        const status = await uploadFile(client, bucket, ctx.currentPath, file);
+        if (!status) {
+          failedFiles.push(file.name);
+          success &&= status;
+        }
+      } else {
+        failedFiles.push(file.name);
+        success = false;
+      }
+    }
+
+    if (success) {
+      setSnackBarSettings({
+        message: `Successfully uploaded ${files.length} files`,
+        open: true,
+        severity: 'success'
+      });
+
+      fetchObjects(ctx.currentPath);
+    } else if (failedFiles.length < files.length) {
+      setSnackBarSettings({
+        message: `Successfully uploaded ${files.length - failedFiles.length} with ${failedFiles.length} ${failedFiles.length === 1 ? 'failure' : 'failures'}`,
+        open: true,
+        severity: 'warning'
+      });
+
+      fetchObjects(ctx.currentPath);
+    } else {
+      setSnackBarSettings({
+        message: `Failed to upload all files`,
+        open: true,
+        severity: 'error'
+      });
+    }
   };
 
   // ########################################
@@ -119,43 +167,32 @@ export const FileMain: FC<FileMainProps> = (props) => {
       return;
     }
 
-    let success = true;
-    const failedFiles: string[] = [];
-    for (let i = 0; i < files.length; i++) {
-      // TODO: pop up overwrite warning if the file already exists
+    await uploadObjects(files);
+  };
 
-      const file = files[i];
-      const status = await uploadFile(client, bucket, ctx.currentPath, file);
-
-      success &&= status;
-      if (!status) {
-        failedFiles.push(file.name);
-      }
+  // handler for drag-n-drop uploading
+  const handleDragEnter = (event: any) => {
+    event.preventDefault();
+    if (draggingIndex.current === 0) {
+      setIsOverDropZone(true);
     }
+    draggingIndex.current++;
+  };
 
-    if (success) {
-      setSnackBarSettings({
-        message: `Successfully uploaded ${files.length} files`,
-        open: true,
-        severity: 'success'
-      });
-
-      fetchObjects(ctx.currentPath);
-    } else if (failedFiles.length < files.length) {
-      setSnackBarSettings({
-        message: `Successfully uploaded ${files.length - failedFiles.length} with ${failedFiles.length} ${failedFiles.length === 1 ? 'failure' : 'failures'}`,
-        open: true,
-        severity: 'warning'
-      });
-
-      fetchObjects(ctx.currentPath);
-    } else {
-      setSnackBarSettings({
-        message: `Failed to upload all files`,
-        open: true,
-        severity: 'error'
-      });
+  const handleDragLeave = (event: any) => {
+    event.preventDefault();
+    if (draggingIndex.current === 1) {
+      setIsOverDropZone(false);
     }
+    draggingIndex.current--;
+  };
+
+  const handleDragDrop = async (event: any) => {
+    event.preventDefault();
+    setIsOverDropZone(false);
+
+    await uploadObjects(event.dataTransfer.files);
+    draggingIndex.current = 0;
   };
 
   // handlers for creating new folders
@@ -341,65 +378,68 @@ export const FileMain: FC<FileMainProps> = (props) => {
   );
 
   return (
-    <Paper>
-      <Toolbar>
-        <FileBreadcrumb bucketName={bucketDisplayedName ? bucketDisplayedName : bucket} />
-        <Grid container spacing={1} justifyContent="end">
-          {permissions.upload && (
-            <Grid item>
-              <Button startIcon={<UploadIcon />} component="label">
-                Upload
-                <input hidden multiple type="file" onChange={handleClickUpload} />
-              </Button>
-            </Grid>
+    <Box sx={{ position: 'relative' }}>
+      <Paper onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDragOver={(e) => e.preventDefault()} onDrop={handleDragDrop}>
+        {isOverDropZone && <FileDropZone />}
+        <Toolbar>
+          <FileBreadcrumb bucketName={bucketDisplayedName ? bucketDisplayedName : bucket} />
+          <Grid container spacing={1} justifyContent="end">
+            {permissions.upload && (
+              <Grid item>
+                <Button startIcon={<UploadIcon />} component="label">
+                  Upload
+                  <input hidden multiple type="file" onChange={handleClickUpload} />
+                </Button>
+              </Grid>
+            )}
+            {permissions.createFolder && (
+              <Grid item>
+                <Button onClick={handleClickNewFolder} startIcon={<CreateNewFolderIcon />}>
+                  New Folder
+                </Button>
+              </Grid>
+            )}
+          </Grid>
+          <Tooltip title="Switch View" placement="top-end">
+            <IconButton onClick={handleClickSwitchView}>{listView ? <FormatListBulletedIcon /> : <GridViewIcon />}</IconButton>
+          </Tooltip>
+          <Menu id="view-type-menu" anchorEl={anchorEl} open={open} onClose={handleCloseSwitchView}>
+            <MenuItem onClick={handleClickListView}>
+              <ListItemIcon>
+                <FormatListBulletedIcon />
+              </ListItemIcon>
+              <ListItemText>List View</ListItemText>
+            </MenuItem>
+            <MenuItem onClick={handleClickGridView}>
+              <ListItemIcon>
+                <GridViewIcon />
+              </ListItemIcon>
+              <ListItemText>Grid View</ListItemText>
+            </MenuItem>
+          </Menu>
+        </Toolbar>
+        <div style={{ position: 'relative' }}>
+          <Backdrop open={loading} sx={{ position: 'absolute', zIndex: 9999 }}>
+            <CircularProgress color="inherit" />
+          </Backdrop>
+          {listView && (
+            <FileListView
+              client={client}
+              bucket={bucket}
+              objects={objects}
+              permissions={permissions}
+              onDelete={handleClickDelete}
+              onDownload={handleDownload}
+              onRename={handleClickRename}
+            />
           )}
-          {permissions.createFolder && (
-            <Grid item>
-              <Button onClick={handleClickNewFolder} startIcon={<CreateNewFolderIcon />}>
-                New Folder
-              </Button>
-            </Grid>
-          )}
-        </Grid>
-        <Tooltip title="Switch View" placement="top-end">
-          <IconButton onClick={handleClickSwitchView}>{listView ? <FormatListBulletedIcon /> : <GridViewIcon />}</IconButton>
-        </Tooltip>
-        <Menu id="view-type-menu" anchorEl={anchorEl} open={open} onClose={handleCloseSwitchView}>
-          <MenuItem onClick={handleClickListView}>
-            <ListItemIcon>
-              <FormatListBulletedIcon />
-            </ListItemIcon>
-            <ListItemText>List View</ListItemText>
-          </MenuItem>
-          <MenuItem onClick={handleClickGridView}>
-            <ListItemIcon>
-              <GridViewIcon />
-            </ListItemIcon>
-            <ListItemText>Grid View</ListItemText>
-          </MenuItem>
-        </Menu>
-      </Toolbar>
-      <div style={{ position: 'relative' }}>
-        <Backdrop open={loading} sx={{ position: 'absolute', zIndex: 9999 }}>
-          <CircularProgress color="inherit" />
-        </Backdrop>
-        {listView && (
-          <FileListView
-            client={client}
-            bucket={bucket}
-            objects={objects}
-            permissions={permissions}
-            onDelete={handleClickDelete}
-            onDownload={handleDownload}
-            onRename={handleClickRename}
-          />
-        )}
-      </div>
-      {createFolderDialog}
-      {renameDialog}
-      {deleteDialog}
-      {uploadPopup}
-    </Paper>
+        </div>
+        {createFolderDialog}
+        {renameDialog}
+        {deleteDialog}
+        {uploadPopup}
+      </Paper>
+    </Box>
   );
 };
 
