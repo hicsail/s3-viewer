@@ -13,6 +13,7 @@ import { faFolder } from '@fortawesome/free-solid-svg-icons';
 import { Permission } from '../../types/Permission';
 import { PluginManagerContext } from '../../context/plugins.context';
 import { PluginView } from '../Plugin/PluginView';
+import { formatBytes } from '../../utils/ObjectUtils';
 
 interface ObjectRowProps {
   object: S3Object;
@@ -123,21 +124,4 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
       <TableCell onDoubleClick={handleEscapeDoubleClick}>{actions}</TableCell>
     </TableRow>
   );
-};
-
-// ########################################
-// ########### Helper Functions ###########
-// ########################################
-const formatBytes = (size: number | undefined): string => {
-  if (!size || size == 0) {
-    return '-';
-  }
-
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  let n = 0;
-  while (size >= 1024 && n < units.length - 1) {
-    size /= 1024;
-    n++;
-  }
-  return `${size.toFixed(2)} ${units[n]}`;
 };
