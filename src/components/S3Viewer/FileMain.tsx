@@ -36,6 +36,7 @@ import { FileBreadcrumb } from './FileBreadcrumb';
 import { Permission } from '../../types/Permission';
 import { FileSearch } from './FileSearch';
 import { FileDropZone } from './FileDropZone';
+import { FileGridView } from './FileGridView';
 
 const objectSets = new Set<string>();
 
@@ -325,7 +326,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
       <DialogContent>
         <TextField
           style={{ marginTop: '10px' }}
-          label="Folder Name"
+          label={`${selectedObjects[0]?.isFolder ? 'Folder' : 'File'} Name`}
           InputLabelProps={{ shrink: true }}
           placeholder={selectedObjects[0]?.name}
           value={newName}
@@ -428,6 +429,17 @@ export const FileMain: FC<FileMainProps> = (props) => {
           </Backdrop>
           {listView && (
             <FileListView
+              client={client}
+              bucket={bucket}
+              objects={objects}
+              permissions={permissions}
+              onDelete={handleClickDelete}
+              onDownload={handleDownload}
+              onRename={handleClickRename}
+            />
+          )}
+          {!listView && (
+            <FileGridView
               client={client}
               bucket={bucket}
               objects={objects}
