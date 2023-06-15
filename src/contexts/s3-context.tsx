@@ -27,12 +27,14 @@ export const useS3Context = () => useContext(S3Context);
 
 export const S3Provider: React.FC<S3ProviderProps> = (props) => {
   return (
-    <S3Context.Provider value={{
-      client: props.client,
-      bucket: props.bucket,
-      setCurrentPath: props.setCurrentPath,
-      currentPath: props.currentPath
-    }}>
+    <S3Context.Provider
+      value={{
+        client: props.client,
+        bucket: props.bucket,
+        setCurrentPath: props.setCurrentPath,
+        currentPath: props.currentPath
+      }}
+    >
       {props.children}
     </S3Context.Provider>
   );
