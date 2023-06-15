@@ -5,7 +5,7 @@ import PreviewIcon from '@mui/icons-material/Preview';
 import EditIcon from '@mui/icons-material/Edit';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import DeleteIcon from '@mui/icons-material/Delete';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import InfoIcon from '@mui/icons-material/Info';
 import { useS3Context } from '../../contexts/s3-context';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFile } from '@fortawesome/free-regular-svg-icons';
@@ -104,7 +104,7 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
       )}
       <Grid item xs={2}>
         <IconButton onClick={handleDetails} sx={displayActions ? {} : { visibility: 'hidden' }}>
-          <MoreHorizIcon />
+          <InfoIcon />
         </IconButton>
       </Grid>
       {
