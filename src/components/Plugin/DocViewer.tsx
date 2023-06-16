@@ -3,8 +3,6 @@ import { ReactNode, FC, useState, useEffect } from 'react';
 import DocViewer, { IDocument } from '@cyntler/react-doc-viewer';
 import { S3Object } from '../../types/S3Object';
 import { useS3Context } from '../../contexts/s3-context';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { GetObjectCommand } from '@aws-sdk/client-s3';
 
 export class DocViewPlugin implements Plugin {
   name: string;
@@ -23,14 +21,12 @@ export class DocViewPlugin implements Plugin {
 }
 
 const DocViewWrapper: FC<{ object: S3Object }> = ({ object }) => {
-  const { client, bucket } = useS3Context();
+  const { bucket, getSignedUrl } = useS3Context();
   const [docs, setDocs] = useState<IDocument[]>([]);
 
   useEffect(() => {
     const getURI = async () => {
-      const objCmd = new GetObjectCommand({ Bucket: bucket, Key: object.$raw.Key });
-      // TODO: Will need to evalulate if the `getSignedUrl` will function with Cargo
-      const uri = await getSignedUrl(client, objCmd);
+      const uri = await getSignedUrl(bucket, object.$raw.Key, 60);
       setDocs([{ uri }]);
     };
     getURI();
