@@ -81,7 +81,6 @@ export const FileMain: FC<FileMainProps> = (props) => {
 
   const fetchObjects = async (path: string) => {
     setLoading(true);
-    // const objects = await fetchTempObjects(client, bucket, path);
     if (path) {
       path += '/';
     }
@@ -386,9 +385,9 @@ export const FileMain: FC<FileMainProps> = (props) => {
         <Toolbar>
           <FileBreadcrumb bucketName={bucketDisplayedName ? bucketDisplayedName : bucket} />
           <Grid container spacing={1} justifyContent="end">
-            {/* <Grid item>
-            <FileSearch client={client} bucket={bucket} />
-          </Grid> */}
+            <Grid item>
+              <FileSearch client={client} bucket={bucket} />
+            </Grid>
             {permissions.upload && (
               <Grid item>
                 <Button startIcon={<UploadIcon />} component="label">
