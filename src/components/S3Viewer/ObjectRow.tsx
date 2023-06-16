@@ -11,7 +11,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFile } from '@fortawesome/free-regular-svg-icons';
 import { faFolder } from '@fortawesome/free-solid-svg-icons';
 import { Permission } from '../../types/Permission';
-import { PluginManagerContext } from '../../context/plugins.context';
+import { PluginManagerContext } from '../../contexts/plugins.context';
 import { PluginView } from '../Plugin/PluginView';
 import { formatBytes } from '../../utils/ObjectUtils';
 
