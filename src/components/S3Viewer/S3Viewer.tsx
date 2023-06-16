@@ -2,7 +2,7 @@ import { Dispatch, FC, SetStateAction, useState } from 'react';
 import { FileMain } from './FileMain';
 import { S3Client } from '@aws-sdk/client-s3';
 import { S3Provider } from '../../contexts/s3-context';
-import { PluginManagerProvider } from '../../context/plugins.context';
+import { PluginManagerProvider } from '../../contexts/plugins.context';
 import { Plugin } from './../../types/Plugin';
 
 interface S3ViewerProps {
