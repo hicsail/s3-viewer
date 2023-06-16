@@ -36,40 +36,63 @@ export const FileGridView: FC<FileGridViewProps> = (props) => {
     <>
       <Divider />
       <Box sx={{ padding: 2, width: 'calc(100% - 2)', height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: 'rgba(250, 250, 250, 1)' }}>
-        <Divider sx={{ m: 1 }}>
-          <Typography color="text.secondary" variant="body2">
-            Folders
-          </Typography>
-        </Divider>
-        <Grid container spacing={3}>
-          {folders.map((folder) => (
-            <ObjectCard
-              key={folder.location + folder.name}
-              object={folder}
-              permissions={props.permissions}
-              onDelete={props.onDelete}
-              onDownload={props.onDownload}
-              onRename={props.onRename}
-            />
-          ))}
-        </Grid>
-        <Divider sx={{ m: 1 }}>
-          <Typography color="text.secondary" variant="body2">
-            Files
-          </Typography>
-        </Divider>
-        <Grid container spacing={3}>
-          {files.map((file) => (
-            <ObjectCard
-              key={file.location + file.name}
-              object={file}
-              permissions={props.permissions}
-              onDelete={props.onDelete}
-              onDownload={props.onDownload}
-              onRename={props.onRename}
-            />
-          ))}
-        </Grid>
+        {objects.length === 0 && (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '100%',
+              width: '100%',
+              color: 'grey',
+              fontStyle: 'italic'
+            }}
+          >
+            <Typography variant="subtitle1">There is nothing in here</Typography>
+          </Box>
+        )}
+        {folders.length > 0 && (
+          <div>
+            <Divider sx={{ m: 1 }}>
+              <Typography color="text.secondary" variant="body2">
+                Folders
+              </Typography>
+            </Divider>
+            <Grid container spacing={3}>
+              {folders.map((folder) => (
+                <ObjectCard
+                  key={folder.location + folder.name}
+                  object={folder}
+                  permissions={props.permissions}
+                  onDelete={props.onDelete}
+                  onDownload={props.onDownload}
+                  onRename={props.onRename}
+                />
+              ))}
+            </Grid>
+          </div>
+        )}
+        {files.length > 0 && (
+          <div>
+            <Divider sx={{ m: 1 }}>
+              <Typography color="text.secondary" variant="body2">
+                Files
+              </Typography>
+            </Divider>
+            <Grid container spacing={3}>
+              {files.map((file) => (
+                <ObjectCard
+                  key={file.location + file.name}
+                  object={file}
+                  permissions={props.permissions}
+                  onDelete={props.onDelete}
+                  onDownload={props.onDownload}
+                  onRename={props.onRename}
+                />
+              ))}
+            </Grid>
+          </div>
+        )}
       </Box>
     </>
   );
