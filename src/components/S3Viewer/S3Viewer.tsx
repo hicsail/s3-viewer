@@ -12,6 +12,7 @@ interface S3ViewerProps {
     setCurrentPath: Dispatch<SetStateAction<string>>;
     currentPath: string;
   };
+  getSignedUrl: (bucket: string, key: string, expires: number) => Promise<string>;
   plugins?: Plugin[];
   bucketDisplayedName?: string;
   onCurrentPathChange?: (currentPath: string) => void;
@@ -50,7 +51,7 @@ export const S3Viewer: FC<S3ViewerProps> = (props) => {
   }
 
   return (
-    <S3Provider client={props.client} bucket={props.bucket} currentPath={currentPath} setCurrentPath={setCurrentPath}>
+    <S3Provider client={props.client} bucket={props.bucket} currentPath={currentPath} setCurrentPath={setCurrentPath} getSignedUrl={props.getSignedUrl}>
       <PluginManagerProvider plugins={props.plugins || []}>
         <FileMain
           client={props.client}

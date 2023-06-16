@@ -1,6 +1,5 @@
 import { CopyObjectCommand, DeleteObjectCommand, DeleteObjectsCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { S3Object } from '../types/S3Object';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 const fileToS3Object = (path: string, object: any): S3Object => {
   const name = object.Key.endsWith('/') ? object.Key.split('/').slice(-2, -1)[0] : object.Key.split('/').pop();
@@ -215,20 +214,14 @@ export const uploadFile = async (client: S3Client, bucketName: string, path: str
  *
  * @returns a boolean value indicating whether the file was downloaded successfully
  */
-export const downloadFile = async (client: S3Client, bucketName: string, file: S3Object): Promise<boolean> => {
+export const downloadFile = async (getSignedUrl: (bucket: string, key: string, expires: number) => Promise<string>, bucketName: string, file: S3Object): Promise<boolean> => {
   if (file.isFolder) {
     console.error('Cannot download a folder');
     return false;
   }
 
-  const params = {
-    Bucket: bucketName,
-    Key: file.$raw.Key
-  };
-
   try {
-    const command = new GetObjectCommand(params);
-    const url = await getSignedUrl(client, command, { expiresIn: 60 });
+    const url = await getSignedUrl(bucketName, file.$raw.Key, 60);
 
     const response = await fetch(url);
     const blob = await response.blob();

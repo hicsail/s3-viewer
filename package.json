@@ -13,7 +13,6 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@aws-sdk/s3-request-presigner": "^3.342.0",
     "@cyntler/react-doc-viewer": "^1.13.0",
     "@emotion/react": "^11.11.0",
     "@emotion/styled": "^11.11.0",
@@ -30,6 +29,7 @@
     "@aws-sdk/client-s3": "^3.342.0"
   },
   "devDependencies": {
+    "@aws-sdk/s3-request-presigner": "^3.342.0",
     "@storybook/addon-essentials": "^7.0.18",
     "@storybook/addon-interactions": "^7.0.18",
     "@storybook/addon-links": "^7.0.18",

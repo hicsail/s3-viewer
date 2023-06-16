@@ -239,7 +239,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
 
   // handlers for downloading
   const handleDownload = async (object: S3Object) => {
-    await downloadFile(client, bucket, object);
+    await downloadFile(ctx.getSignedUrl, bucket, object);
   };
 
   // handlers for deleting
