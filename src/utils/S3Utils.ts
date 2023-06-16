@@ -184,6 +184,37 @@ export const getFoldersAndFiles = async (client: S3Client, bucketName: string, p
 };
 
 /**
+ * Fetch all folders and files in the specified bucket.
+ *
+ * @returns an array of S3Object
+ */
+export const getAllFoldersAndFiles = async (client: S3Client, bucketName: string, path: string = ''): Promise<S3Object[]> => {
+  const objects = await getFoldersAndFiles(client, bucketName, path);
+  if (objects.length === 0) {
+    return [];
+  }
+
+  const folders = objects.filter((object) => object.isFolder);
+  for (const folder of folders) {
+    const subObjects = await getAllFoldersAndFiles(client, bucketName, `${folder.location}${folder.location ? '/' : ''}${folder.name}/`);
+    objects.push(...subObjects);
+  }
+
+  return objects;
+};
+
+export const searchFoldersAndFiles = async (client: S3Client, bucketName: string, query: string): Promise<S3Object[]> => {
+  const objects = await getAllFoldersAndFiles(client, bucketName);
+  if (objects.length === 0) {
+    return [];
+  }
+
+  const results = objects.filter((object) => object.name.toLowerCase().includes(query.toLowerCase()));
+
+  return results;
+};
+
+/**
  * Uploads a file to the specified bucket. Space before and after the file name will be trimmed.
  * If the file already exists, it will be overwritten.
  *

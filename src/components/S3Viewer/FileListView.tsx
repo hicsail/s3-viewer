@@ -31,7 +31,7 @@ export const FileListView: FC<FileListViewProps> = (props) => {
   }, [objects, page, rowsPerPage]);
 
   const columns = [
-    { label: '', id: 'icon' },
+    { label: '', id: 'isFolder' },
     { label: 'Name', id: 'name' },
     { label: 'Owner', id: 'owner' },
     { label: 'Date Modified', id: 'date' },
@@ -69,6 +69,8 @@ export const FileListView: FC<FileListViewProps> = (props) => {
     const sortedObjects = [...objects].sort((a, b) => {
       const isAsc = order === 'asc';
       switch (orderBy) {
+        case 'isFolder':
+          return isAsc ? (a.isFolder ? -1 : 1) : b.isFolder ? -1 : 1;
         case 'name':
           return isAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
         case 'owner':
@@ -88,7 +90,7 @@ export const FileListView: FC<FileListViewProps> = (props) => {
     <>
       <TableContainer>
         <Table>
-          <EnhancedTableHead onRequestSort={handleRequestSort} columns={columns} sortableIds={['name', 'owner', 'date', 'size']} order={order} orderBy={orderBy} />
+          <EnhancedTableHead onRequestSort={handleRequestSort} columns={columns} sortableIds={['isFolder', 'name', 'date', 'size']} order={order} orderBy={orderBy} />
           <TableBody>
             {visibleRows.map((object) => (
               <ObjectRow

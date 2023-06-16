@@ -34,7 +34,9 @@ import { useS3Context } from '../../contexts/s3-context';
 import { createFolder, deleteFileOrFolder, downloadFile, getFoldersAndFiles, renameFileOrFolder, uploadFile } from '../../utils/S3Utils';
 import { FileBreadcrumb } from './FileBreadcrumb';
 import { Permission } from '../../types/Permission';
+import { FileSearch } from './FileSearch';
 import { FileDropZone } from './FileDropZone';
+import { FileGridView } from './FileGridView';
 
 const objectSets = new Set<string>();
 
@@ -79,7 +81,6 @@ export const FileMain: FC<FileMainProps> = (props) => {
 
   const fetchObjects = async (path: string) => {
     setLoading(true);
-    // const objects = await fetchTempObjects(client, bucket, path);
     if (path) {
       path += '/';
     }
@@ -324,7 +325,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
       <DialogContent>
         <TextField
           style={{ marginTop: '10px' }}
-          label="Folder Name"
+          label={`${selectedObjects[0]?.isFolder ? 'Folder' : 'File'} Name`}
           InputLabelProps={{ shrink: true }}
           placeholder={selectedObjects[0]?.name}
           value={newName}
@@ -384,6 +385,9 @@ export const FileMain: FC<FileMainProps> = (props) => {
         <Toolbar>
           <FileBreadcrumb bucketName={bucketDisplayedName ? bucketDisplayedName : bucket} />
           <Grid container spacing={1} justifyContent="end">
+            <Grid item>
+              <FileSearch client={client} bucket={bucket} />
+            </Grid>
             {permissions.upload && (
               <Grid item>
                 <Button startIcon={<UploadIcon />} component="label">
@@ -424,6 +428,17 @@ export const FileMain: FC<FileMainProps> = (props) => {
           </Backdrop>
           {listView && (
             <FileListView
+              client={client}
+              bucket={bucket}
+              objects={objects}
+              permissions={permissions}
+              onDelete={handleClickDelete}
+              onDownload={handleDownload}
+              onRename={handleClickRename}
+            />
+          )}
+          {!listView && (
+            <FileGridView
               client={client}
               bucket={bucket}
               objects={objects}

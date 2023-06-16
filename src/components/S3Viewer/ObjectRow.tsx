@@ -5,7 +5,7 @@ import PreviewIcon from '@mui/icons-material/Preview';
 import EditIcon from '@mui/icons-material/Edit';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import DeleteIcon from '@mui/icons-material/Delete';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import InfoIcon from '@mui/icons-material/Info';
 import { useS3Context } from '../../contexts/s3-context';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFile } from '@fortawesome/free-regular-svg-icons';
@@ -13,6 +13,7 @@ import { faFolder } from '@fortawesome/free-solid-svg-icons';
 import { Permission } from '../../types/Permission';
 import { PluginManagerContext } from '../../context/plugins.context';
 import { PluginView } from '../Plugin/PluginView';
+import { formatBytes } from '../../utils/ObjectUtils';
 
 interface ObjectRowProps {
   object: S3Object;
@@ -103,7 +104,7 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
       )}
       <Grid item xs={2}>
         <IconButton onClick={handleDetails} sx={displayActions ? {} : { visibility: 'hidden' }}>
-          <MoreHorizIcon />
+          <InfoIcon />
         </IconButton>
       </Grid>
       {
@@ -123,21 +124,4 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
       <TableCell onDoubleClick={handleEscapeDoubleClick}>{actions}</TableCell>
     </TableRow>
   );
-};
-
-// ########################################
-// ########### Helper Functions ###########
-// ########################################
-const formatBytes = (size: number | undefined): string => {
-  if (!size || size == 0) {
-    return '-';
-  }
-
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-  let n = 0;
-  while (size >= 1024 && n < units.length - 1) {
-    size /= 1024;
-    n++;
-  }
-  return `${size.toFixed(2)} ${units[n]}`;
 };

@@ -22,7 +22,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
     <TableHead>
       <TableRow>
         {columns.map((column) => (
-          <TableCell key={column.id}>
+          <TableCell key={column.id} align={column.id === 'isFolder' ? 'center' : 'left'}>
             {sortableIdsSet.has(column.id) ? (
               <TableSortLabel active={orderBy === column.id} direction={orderBy === column.id ? order : 'asc'} onClick={createSortHandler(column.id)}>
                 {column.label}
