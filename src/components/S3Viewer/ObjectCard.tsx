@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC, useContext, useState } from 'react';
 import { Permission } from '../../types/Permission';
 import { S3Object } from '../../types/S3Object';
 import { useS3Context } from '../../contexts/s3-context';
@@ -12,6 +12,8 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
 import { faFile, faFolder } from '@fortawesome/free-solid-svg-icons';
+import { PluginManagerContext } from '../../context/plugins.context';
+import { PluginView } from '../..';
 
 interface ObjectCardProps {
   object: S3Object;
@@ -25,6 +27,9 @@ export const ObjectCard: FC<ObjectCardProps> = (props) => {
   const { object, permissions } = props;
   const { onDelete: handleDelete, onDownload: handleDownload, onRename: handleRename } = props;
   const ctx = useS3Context();
+  const pluginManager = useContext(PluginManagerContext);
+
+  const [openModal, setOpenModal] = useState<boolean>(false);
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -53,10 +58,14 @@ export const ObjectCard: FC<ObjectCardProps> = (props) => {
     setAnchorEl(null);
   };
 
+  const handlePreview = () => {
+    setOpenModal(true);
+  };
+
   const actions = (
     <Menu id="view-type-menu" anchorEl={anchorEl} open={open} onClose={handleCloseMore}>
-      {permissions.preview && (
-        <MenuItem>
+      {permissions.preview && pluginManager.hasPlugin(object.ext) && (
+        <MenuItem onClick={handlePreview}>
           <ListItemIcon>
             <PreviewIcon />
           </ListItemIcon>
@@ -108,6 +117,10 @@ export const ObjectCard: FC<ObjectCardProps> = (props) => {
         </ListItemIcon>
         <ListItemText primary="Details" />
       </MenuItem>
+      {
+        // TODO: In the future support multiple plugins
+        pluginManager.hasPlugin(props.object.ext) && <PluginView plugin={pluginManager.getPlugins(props.object.ext!)![0]} open={openModal} setOpen={setOpenModal} object={object} />
+      }
     </Menu>
   );
 
