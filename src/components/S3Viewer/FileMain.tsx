@@ -479,7 +479,7 @@ const isValidS3Key = (key: string): boolean => {
   }
 
   // Forbidden characters
-  if (/[\\"{}^%`[\]>~<#|]/.test(key)) {
+  if (/[/\\"{}^%`[\]>~<#|]/.test(key)) {
     console.log('forbidden characters');
     return false;
   }
