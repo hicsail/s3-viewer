@@ -287,9 +287,6 @@ export const FileMain: FC<FileMainProps> = (props) => {
   };
 
   const handleClickRename = (object: S3Object) => {
-    setNewName('');
-    setTextFieldError(false);
-    setTextFieldHelperText('');
     setSelectedObjects([object]);
     setRenameDialogOpen(true);
   };
@@ -297,7 +294,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
   const handleCloseRename = () => {
     setNewName('');
     setTextFieldHelperText('');
-    setTextFieldError(true);
+    setTextFieldError(false);
     setRenameDialogOpen(false);
     setSelectedObjects([]);
   };
