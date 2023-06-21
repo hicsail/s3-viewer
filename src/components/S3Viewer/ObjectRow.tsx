@@ -74,7 +74,7 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
 
   const actions = (
     <Grid container justifyContent="center" alignItems="center">
-      {permissions.preview && pluginManager.hasPlugin(props.object.ext) && (
+      {permissions.preview && !object.isFolder && pluginManager.hasPlugin(props.object.ext) && (
         <Grid item xs={2}>
           <IconButton onClick={handlePreview} sx={displayActions ? {} : { visibility: 'hidden' }}>
             <PreviewIcon />
@@ -88,7 +88,7 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
           </IconButton>
         </Grid>
       )}
-      {permissions.download && (
+      {permissions.download && !object.isFolder && (
         <Grid item xs={2}>
           <IconButton onClick={() => handleDownload(object)} sx={displayActions ? {} : { visibility: 'hidden' }}>
             <FileDownloadIcon />

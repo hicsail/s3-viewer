@@ -64,7 +64,7 @@ export const ObjectCard: FC<ObjectCardProps> = (props) => {
 
   const actions = (
     <Menu id="view-type-menu" anchorEl={anchorEl} open={open} onClose={handleCloseMore}>
-      {permissions.preview && pluginManager.hasPlugin(object.ext) && (
+      {permissions.preview && !object.isFolder && pluginManager.hasPlugin(object.ext) && (
         <MenuItem onClick={handlePreview}>
           <ListItemIcon>
             <PreviewIcon />
@@ -85,7 +85,7 @@ export const ObjectCard: FC<ObjectCardProps> = (props) => {
           <ListItemText primary="Rename" />
         </MenuItem>
       )}
-      {permissions.download && (
+      {permissions.download && !object.isFolder && (
         <MenuItem
           onClick={() => {
             handleCloseMore();
