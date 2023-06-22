@@ -76,7 +76,7 @@ export const deleteFileOrFolder = async (client: S3Client, bucketName: string, o
   if (object.isFolder) {
     const params = {
       Bucket: bucketName,
-      Prefix: `${object.location}${object.location ? '/' : ''}${object.name}`
+      Prefix: `${object.location}${object.location ? '/' : ''}${object.name}/`
     };
 
     try {
