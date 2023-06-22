@@ -235,7 +235,8 @@ export const uploadFile = async (client: S3Client, bucketName: string, path: str
 
     return true;
   } catch (error) {
-    throw new Error('Error uploading file: ' + error);
+    console.error(error);
+    return false;
   }
 };
 
