@@ -76,7 +76,7 @@ export const deleteFileOrFolder = async (client: S3Client, bucketName: string, o
   if (object.isFolder) {
     const params = {
       Bucket: bucketName,
-      Prefix: `${object.location}${object.location ? '/' : ''}${object.name}`
+      Prefix: `${object.location}${object.location ? '/' : ''}${object.name}/`
     };
 
     try {
@@ -235,7 +235,8 @@ export const uploadFile = async (client: S3Client, bucketName: string, path: str
 
     return true;
   } catch (error) {
-    throw new Error('Error uploading file: ' + error);
+    console.error(error);
+    return false;
   }
 };
 

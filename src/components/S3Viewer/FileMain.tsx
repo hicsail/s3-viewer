@@ -89,7 +89,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
     setObjects(objects);
     objectSets.clear();
     objects.forEach((object) => {
-      objectSets.add(object.name);
+      objectSets.add(object.name.toLocaleLowerCase());
     });
     setLoading(false);
   };
@@ -101,12 +101,14 @@ export const FileMain: FC<FileMainProps> = (props) => {
       // TODO: pop up overwrite warning if the file already exists
 
       const file = files[i];
-      if (isValidS3Key(file.name)) {
+      if (isValidS3Key(file.name) && !objectSets.has(file.name.toLocaleLowerCase())) {
         const status = await uploadFile(client, bucket, ctx.currentPath, file);
         if (!status) {
           failedFiles.push(file.name);
           success &&= status;
         }
+      } else if (objectSets.has(file.name.toLocaleLowerCase())) {
+        // TODO: Overwrite warning
       } else {
         failedFiles.push(file.name);
         success = false;
@@ -203,6 +205,8 @@ export const FileMain: FC<FileMainProps> = (props) => {
 
   const handleCloseNewFolder = () => {
     setNewName('');
+    setTextFieldError(false);
+    setTextFieldHelperText('');
     setNewFolderDialogOpen(false);
   };
 
@@ -210,7 +214,6 @@ export const FileMain: FC<FileMainProps> = (props) => {
     const newFolderName = event.target.value;
     setTextFieldError(false);
     setTextFieldHelperText('');
-
     setNewName(newFolderName);
   };
 
@@ -219,7 +222,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
     if (newName === '') {
       setTextFieldError(true);
       setTextFieldHelperText('Folder name cannot be empty');
-    } else if (objectSets.has(newName)) {
+    } else if (objectSets.has(newName.toLocaleLowerCase())) {
       setTextFieldError(true);
       setTextFieldHelperText('Folder name already exists');
     } else if (!isValidS3Key(newName)) {
@@ -228,13 +231,12 @@ export const FileMain: FC<FileMainProps> = (props) => {
     } else {
       try {
         await createFolder(client, bucket, ctx.currentPath, newName);
-        setNewFolderDialogOpen(false);
-        setNewName('');
-
         fetchObjects(ctx.currentPath);
       } catch (err) {
         alert("Couldn't create folder: " + err);
       }
+
+      handleCloseNewFolder();
     }
   };
 
@@ -263,11 +265,25 @@ export const FileMain: FC<FileMainProps> = (props) => {
 
   // handlers for renaming
   const handleRename = async () => {
-    await renameFileOrFolder(client, bucket, selectedObjects[0], newName);
-    setNewName('');
-    setRenameDialogOpen(false);
-    setSelectedObjects([]);
-    fetchObjects(ctx.currentPath);
+    if (newName === '') {
+      setTextFieldError(true);
+      setTextFieldHelperText('Name cannot be empty');
+    } else if (objectSets.has(newName.toLocaleLowerCase())) {
+      setTextFieldError(true);
+      setTextFieldHelperText('Name already exists');
+    } else if (!isValidS3Key(newName)) {
+      setTextFieldError(true);
+      setTextFieldHelperText('Illegal name');
+    } else {
+      try {
+        await renameFileOrFolder(client, bucket, selectedObjects[0], newName);
+        fetchObjects(ctx.currentPath);
+      } catch (err) {
+        alert("Couldn't rename file or folder: " + err);
+      }
+
+      handleCloseRename();
+    }
   };
 
   const handleClickRename = (object: S3Object) => {
@@ -276,9 +292,11 @@ export const FileMain: FC<FileMainProps> = (props) => {
   };
 
   const handleCloseRename = () => {
+    setNewName('');
+    setTextFieldHelperText('');
+    setTextFieldError(false);
     setRenameDialogOpen(false);
     setSelectedObjects([]);
-    setNewName('');
   };
 
   // initial fetching for files and folders upon opening the page
@@ -479,7 +497,7 @@ const isValidS3Key = (key: string): boolean => {
   }
 
   // Forbidden characters
-  if (/[\\"{}^%`[\]>~<#|]/.test(key)) {
+  if (/[/\\"{}^%`[\]>~<#|]/.test(key)) {
     console.log('forbidden characters');
     return false;
   }
