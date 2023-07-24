@@ -45,7 +45,7 @@ export const SideNav: FC<SideNavProps> = (props) => {
           <IconButton onClick={handleDrawerClose}>
             <ChevronRightIcon />
           </IconButton>
-          <Typography variant="h6" marginY="auto" lineHeight="normal">
+          <Typography variant="h6" marginY="auto" lineHeight="normal" sx={{ wordBreak: 'break-word' }}>
             {object?.name}
           </Typography>
         </Box>
