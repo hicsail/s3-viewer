@@ -408,7 +408,6 @@ export const FileMain: FC<FileMainProps> = (props) => {
 
   return (
     <Box sx={{ position: 'relative' }}>
-      <Button onClick={() => setSideNavOpen(!sideNavOpen)}>Toggle SideNav</Button>
       <Paper onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDragOver={(e) => e.preventDefault()} onDrop={handleDragDrop}>
         {isOverDropZone && <FileDropZone />}
         <Toolbar>
