@@ -21,11 +21,12 @@ interface ObjectCardProps {
   onDelete: (object: S3Object) => void;
   onDownload: (object: S3Object) => void;
   onRename: (object: S3Object) => void;
+  onDetails: (object: S3Object) => void;
 }
 
 export const ObjectCard: FC<ObjectCardProps> = (props) => {
   const { object, permissions } = props;
-  const { onDelete: handleDelete, onDownload: handleDownload, onRename: handleRename } = props;
+  const { onDelete: handleDelete, onDownload: handleDownload, onRename: handleRename, onDetails: handleDetails } = props;
   const ctx = useS3Context();
   const pluginManager = useContext(PluginManagerContext);
 
@@ -111,7 +112,12 @@ export const ObjectCard: FC<ObjectCardProps> = (props) => {
           <ListItemText primary="Delete" />
         </MenuItem>
       )}
-      <MenuItem>
+      <MenuItem
+        onClick={() => {
+          handleCloseMore();
+          handleDetails(object);
+        }}
+      >
         <ListItemIcon>
           <InfoIcon />
         </ListItemIcon>

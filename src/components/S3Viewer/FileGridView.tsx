@@ -13,6 +13,7 @@ interface FileGridViewProps {
   onDelete: (object: S3Object) => void;
   onDownload: (object: S3Object) => void;
   onRename: (object: S3Object) => void;
+  onDetails: (object: S3Object) => void;
 }
 
 export const FileGridView: FC<FileGridViewProps> = (props) => {
@@ -67,6 +68,7 @@ export const FileGridView: FC<FileGridViewProps> = (props) => {
                   onDelete={props.onDelete}
                   onDownload={props.onDownload}
                   onRename={props.onRename}
+                  onDetails={props.onDetails}
                 />
               ))}
             </Grid>
@@ -88,6 +90,7 @@ export const FileGridView: FC<FileGridViewProps> = (props) => {
                   onDelete={props.onDelete}
                   onDownload={props.onDownload}
                   onRename={props.onRename}
+                  onDetails={props.onDetails}
                 />
               ))}
             </Grid>

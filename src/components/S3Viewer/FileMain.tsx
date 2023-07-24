@@ -37,6 +37,7 @@ import { Permission } from '../../types/Permission';
 import { FileSearch } from './FileSearch';
 import { FileDropZone } from './FileDropZone';
 import { FileGridView } from './FileGridView';
+import { SideNav } from './SideNav';
 
 const objectSets = new Set<string>();
 
@@ -78,6 +79,9 @@ export const FileMain: FC<FileMainProps> = (props) => {
   const [textFieldHelperText, setTextFieldHelperText] = useState('');
   const [isOverDropZone, setIsOverDropZone] = useState(false);
   const draggingIndex = useRef(0);
+
+  // state for sidenav
+  const [sideNavOpen, setSideNavOpen] = useState(false);
 
   const fetchObjects = async (path: string) => {
     setLoading(true);
@@ -299,6 +303,12 @@ export const FileMain: FC<FileMainProps> = (props) => {
     setSelectedObjects([]);
   };
 
+  // handlers for details
+  const handleClickDetails = (object: S3Object) => {
+    setSideNavOpen(true);
+    setSelectedObjects([object]);
+  };
+
   // initial fetching for files and folders upon opening the page
   useEffect(() => {
     fetchObjects(ctx.currentPath);
@@ -398,6 +408,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
 
   return (
     <Box sx={{ position: 'relative' }}>
+      <Button onClick={() => setSideNavOpen(!sideNavOpen)}>Toggle SideNav</Button>
       <Paper onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDragOver={(e) => e.preventDefault()} onDrop={handleDragDrop}>
         {isOverDropZone && <FileDropZone />}
         <Toolbar>
@@ -453,6 +464,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
               onDelete={handleClickDelete}
               onDownload={handleDownload}
               onRename={handleClickRename}
+              onDetails={handleClickDetails}
             />
           )}
           {!listView && (
@@ -464,6 +476,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
               onDelete={handleClickDelete}
               onDownload={handleDownload}
               onRename={handleClickRename}
+              onDetails={handleClickDetails}
             />
           )}
         </div>
@@ -472,6 +485,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
         {deleteDialog}
         {uploadPopup}
       </Paper>
+      <SideNav open={sideNavOpen} onSetOpen={setSideNavOpen} object={selectedObjects[0]} />
     </Box>
   );
 };

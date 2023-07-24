@@ -21,11 +21,12 @@ interface ObjectRowProps {
   onDelete: (object: S3Object) => void;
   onDownload: (object: S3Object) => void;
   onRename: (object: S3Object) => void;
+  onDetails: (object: S3Object) => void;
 }
 
 export const ObjectRow: FC<ObjectRowProps> = (props) => {
   const { object, permissions } = props;
-  const { onDelete: handleDelete, onDownload: handleDownload, onRename: handleRename } = props;
+  const { onDelete: handleDelete, onDownload: handleDownload, onRename: handleRename, onDetails: handleDetails } = props;
   const ctx = useS3Context();
   const pluginManager = useContext(PluginManagerContext);
 
@@ -51,11 +52,6 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
 
   const handlePreview = () => {
     setOpenModal(true);
-  };
-
-  const handleDetails = () => {
-    // TODO: implement details action
-    alert('details');
   };
 
   const handleDoubleClickRow = (event: MouseEvent) => {
@@ -103,7 +99,7 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
         </Grid>
       )}
       <Grid item xs={2}>
-        <IconButton onClick={handleDetails} sx={displayActions ? {} : { visibility: 'hidden' }}>
+        <IconButton onClick={() => handleDetails(object)} sx={displayActions ? {} : { visibility: 'hidden' }}>
           <InfoIcon />
         </IconButton>
       </Grid>
