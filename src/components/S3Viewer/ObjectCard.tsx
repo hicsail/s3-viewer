@@ -112,17 +112,19 @@ export const ObjectCard: FC<ObjectCardProps> = (props) => {
           <ListItemText primary="Delete" />
         </MenuItem>
       )}
-      <MenuItem
-        onClick={() => {
-          handleCloseMore();
-          handleDetails(object);
-        }}
-      >
-        <ListItemIcon>
-          <InfoIcon />
-        </ListItemIcon>
-        <ListItemText primary="Details" />
-      </MenuItem>
+      {!object.isFolder && (
+        <MenuItem
+          onClick={() => {
+            handleCloseMore();
+            handleDetails(object);
+          }}
+        >
+          <ListItemIcon>
+            <InfoIcon />
+          </ListItemIcon>
+          <ListItemText primary="Details" />
+        </MenuItem>
+      )}
       {
         // TODO: In the future support multiple plugins
         pluginManager.hasPlugin(props.object.ext) && <PluginView plugin={pluginManager.getPlugins(props.object.ext!)![0]} open={openModal} setOpen={setOpenModal} object={object} />

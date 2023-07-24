@@ -31,7 +31,7 @@ import UploadIcon from '@mui/icons-material/Upload';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import { FileListView } from './FileListView';
 import { useS3Context } from '../../contexts/s3-context';
-import { createFolder, deleteFileOrFolder, downloadFile, getFoldersAndFiles, renameFileOrFolder, uploadFile } from '../../utils/S3Utils';
+import { createFolder, deleteFileOrFolder, downloadFile, getFile, getFoldersAndFiles, renameFileOrFolder, uploadFile } from '../../utils/S3Utils';
 import { FileBreadcrumb } from './FileBreadcrumb';
 import { Permission } from '../../types/Permission';
 import { FileSearch } from './FileSearch';
@@ -304,9 +304,10 @@ export const FileMain: FC<FileMainProps> = (props) => {
   };
 
   // handlers for details
-  const handleClickDetails = (object: S3Object) => {
+  const handleClickDetails = async (object: S3Object) => {
+    const objectDetails = await getFile(client, bucket, object);
+    setSelectedObjects([objectDetails]);
     setSideNavOpen(true);
-    setSelectedObjects([object]);
   };
 
   // initial fetching for files and folders upon opening the page

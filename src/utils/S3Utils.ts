@@ -1,4 +1,13 @@
-import { CopyObjectCommand, DeleteObjectCommand, DeleteObjectsCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  CopyObjectCommand,
+  DeleteObjectCommand,
+  DeleteObjectsCommand,
+  GetObjectCommand,
+  HeadObjectCommand,
+  ListObjectsV2Command,
+  PutObjectCommand,
+  S3Client
+} from '@aws-sdk/client-s3';
 import { S3Object } from '../types/S3Object';
 
 const fileToS3Object = (path: string, object: any): S3Object => {
@@ -8,6 +17,7 @@ const fileToS3Object = (path: string, object: any): S3Object => {
     etag: object.ETag,
     name,
     location: path.replace(/\/+$/, ''),
+    uploadDate: object.Metadata?.['upload-date'] ? new Date(object.Metadata['upload-date']) : undefined,
     lastModified: object.LastModified,
     versionId: object.VersionId,
     size: object.Size,
@@ -151,6 +161,27 @@ export const renameFileOrFolder = async (client: S3Client, bucketName: string, o
 };
 
 /**
+ * Fetches a file from the specified bucket.
+ *
+ * @returns an S3Object
+ */
+export const getFile = async (client: S3Client, bucketName: string, object: S3Object): Promise<S3Object> => {
+  const params = {
+    Bucket: bucketName,
+    Key: object.$raw.Key
+  };
+
+  try {
+    const command = new HeadObjectCommand(params);
+    const response = await client.send(command);
+
+    return fileToS3Object(object.location, { ...response, ...object.$raw });
+  } catch (error) {
+    throw new Error('Error getting file: ' + error);
+  }
+};
+
+/**
  * Fetch all folders and files at the specified path in the specified bucket.
  *
  * @returns an array of S3Object
@@ -226,7 +257,10 @@ export const uploadFile = async (client: S3Client, bucketName: string, path: str
     Bucket: bucketName,
     Key: path ? `${path}/${file.name.trim()}` : `${file.name.trim()}`,
     Body: file,
-    ContentType: file.type
+    ContentType: file.type,
+    Metadata: {
+      'upload-date': new Date().toISOString()
+    }
   };
 
   try {

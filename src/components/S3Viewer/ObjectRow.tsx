@@ -98,11 +98,13 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
           </IconButton>
         </Grid>
       )}
-      <Grid item xs={2}>
-        <IconButton onClick={() => handleDetails(object)} sx={displayActions ? {} : { visibility: 'hidden' }}>
-          <InfoIcon />
-        </IconButton>
-      </Grid>
+      {!object.isFolder && (
+        <Grid item xs={2}>
+          <IconButton onClick={() => handleDetails(object)} sx={displayActions ? {} : { visibility: 'hidden' }}>
+            <InfoIcon />
+          </IconButton>
+        </Grid>
+      )}
       {
         // TODO: In the future support multiple plugins
         pluginManager.hasPlugin(props.object.ext) && <PluginView plugin={pluginManager.getPlugins(props.object.ext!)![0]} open={openModal} setOpen={setOpenModal} object={object} />
