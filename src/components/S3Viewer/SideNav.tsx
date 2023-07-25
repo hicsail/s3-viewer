@@ -1,8 +1,9 @@
-import { FC, useState } from 'react';
+import { FC, useContext, useState } from 'react';
 import { Box, Drawer, IconButton, Tab, Tabs, Typography } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { S3Object } from '../..';
 import { formatBytes } from '../../utils/ObjectUtils';
+import { PluginManagerContext } from '../../contexts/plugins.context';
 
 interface SideNavProps {
   open: boolean;
@@ -28,6 +29,9 @@ const TabPanel: FC<TabPanelProps> = (props) => {
 
 export const SideNav: FC<SideNavProps> = (props) => {
   const { open, onSetOpen, object } = props;
+  const pluginManager = useContext(PluginManagerContext);
+  const plugins = pluginManager.getPlugins('*');
+
   const [value, setValue] = useState(0);
 
   const handleDrawerClose = () => {
@@ -52,6 +56,9 @@ export const SideNav: FC<SideNavProps> = (props) => {
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={value} onChange={handleChange} variant="scrollable">
             <Tab label="Info" />
+            {plugins?.map((plugin) => (
+              <Tab key={plugin.name} label={plugin.name} />
+            ))}
           </Tabs>
         </Box>
         <TabPanel value={value} index={0}>
@@ -74,6 +81,11 @@ export const SideNav: FC<SideNavProps> = (props) => {
             </Typography>
           </Box>
         </TabPanel>
+        {plugins?.map((plugin, index) => (
+          <TabPanel key={plugin.name} value={value} index={index + 1}>
+            <Box padding={2}>{plugin.getView(object)}</Box>
+          </TabPanel>
+        ))}
       </Box>
     </Drawer>
   );
