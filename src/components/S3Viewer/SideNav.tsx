@@ -44,48 +44,52 @@ export const SideNav: FC<SideNavProps> = (props) => {
 
   return (
     <Drawer variant="persistent" anchor="right" open={open}>
-      <Box component="div" width="20vw" minWidth={300}>
-        <Box display="flex" padding={2}>
-          <IconButton onClick={handleDrawerClose}>
-            <ChevronRightIcon />
-          </IconButton>
-          <Typography variant="h6" marginY="auto" lineHeight="normal" sx={{ wordBreak: 'break-word' }}>
-            {object?.name}
-          </Typography>
-        </Box>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={value} onChange={handleChange} variant="scrollable">
-            <Tab label="Info" />
-            {plugins?.map((plugin) => (
-              <Tab key={plugin.name} label={plugin.name} />
-            ))}
-          </Tabs>
-        </Box>
-        <TabPanel value={value} index={0}>
-          <Box padding={2}>
-            <Typography variant="body1">
-              <b>Size: </b>
-              {formatBytes(object?.size)}
-            </Typography>
-            <Typography variant="body1">
-              <b>Location: </b>
-              {object?.location + '/'}
-            </Typography>
-            <Typography variant="body1">
-              <b>Uploaded At: </b>
-              {object?.uploadDate?.toLocaleString()}
-            </Typography>
-            <Typography variant="body1">
-              <b>Last Modified At: </b>
-              {object?.lastModified.toLocaleString()}
+      <Box component="div" width="20vw" minWidth={350}>
+        <Box sx={{ position: 'fixed', height: '120px', width: '20vw', minWidth: 350, zIndex: 1, backgroundColor: 'white' }}>
+          <Box display="flex" padding={2}>
+            <IconButton onClick={handleDrawerClose}>
+              <ChevronRightIcon />
+            </IconButton>
+            <Typography variant="h6" marginY="auto" lineHeight="normal" sx={{ wordBreak: 'break-word' }}>
+              {object?.name}
             </Typography>
           </Box>
-        </TabPanel>
-        {plugins?.map((plugin, index) => (
-          <TabPanel key={plugin.name} value={value} index={index + 1}>
-            <Box padding={2}>{plugin.getView(object)}</Box>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs value={value} onChange={handleChange} variant="scrollable">
+              <Tab label="Info" />
+              {plugins?.map((plugin) => (
+                <Tab key={plugin.name} label={plugin.name} />
+              ))}
+            </Tabs>
+          </Box>
+        </Box>
+        <Box sx={{ position: 'fixed', bottom: 0, height: 'calc(100vh - 120px)', width: '20vw', minWidth: 350 }}>
+          <TabPanel value={value} index={0}>
+            <Box padding={2}>
+              <Typography variant="body1">
+                <b>Size: </b>
+                {formatBytes(object?.size)}
+              </Typography>
+              <Typography variant="body1">
+                <b>Location: </b>
+                {object?.location + '/'}
+              </Typography>
+              <Typography variant="body1">
+                <b>Uploaded At: </b>
+                {object?.uploadDate?.toLocaleString()}
+              </Typography>
+              <Typography variant="body1">
+                <b>Last Modified At: </b>
+                {object?.lastModified.toLocaleString()}
+              </Typography>
+            </Box>
           </TabPanel>
-        ))}
+          {plugins?.map((plugin, index) => (
+            <TabPanel key={plugin.name} value={value} index={index + 1}>
+              {plugin.getView(object)}
+            </TabPanel>
+          ))}
+        </Box>
       </Box>
     </Drawer>
   );
