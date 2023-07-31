@@ -3,6 +3,7 @@ import { S3Viewer } from './S3Viewer';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { DocViewPlugin } from '../Plugin/DocViewer';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { FileComment } from '../Plugin/FileComment';
 
 const meta: Meta<typeof S3Viewer> = {
   title: 'S3 Viewer',
@@ -45,7 +46,7 @@ export const Primary: Story = (args: any) => <S3Viewer {...args} />;
 Primary.args = {
   client: s3Client,
   getSignedUrl: s3PresignGetURL,
-  plugins: [new DocViewPlugin()],
+  plugins: [new DocViewPlugin(), new FileComment()],
   bucket: import.meta.env.VITE_TEST_BUCKET_NAME,
   bucketDisplayedName: 'Test Bucket',
   disableActions: false,
