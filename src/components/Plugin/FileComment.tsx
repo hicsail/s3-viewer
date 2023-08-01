@@ -40,20 +40,18 @@ type User = {
 export class FileComment implements SideNavPlugin {
   name: string;
   description: string;
+  icon: ReactNode;
   fileExtensions: string[];
 
   constructor() {
     this.name = 'Comment';
     this.description = 'Comment on documents';
+    this.icon = <CommentIcon />;
     this.fileExtensions = ['*']; // wildcard. support all files
   }
 
   getView(object: S3Object): ReactNode {
     return <FileCommentPanel object={object} />;
-  }
-
-  getAction(): ReactNode {
-    return <CommentIcon />;
   }
 }
 
