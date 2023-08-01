@@ -13,7 +13,7 @@ export class FileComment implements Plugin {
     this.fileExtensions = ['bmp', 'csv', 'odt', 'doc', 'docx', 'gif', 'jpg', 'jpeg', 'pdf', 'png', 'ppt', 'pptx', 'tiff', 'txt', 'xls', 'xlsx'];
   }
 
-  getView(object: S3Object): ReactNode {
+  getView(_object: S3Object): ReactNode {
     return <></>;
   }
 }
