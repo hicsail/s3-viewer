@@ -1,4 +1,4 @@
-import { FC, useContext, useState } from 'react';
+import { FC, useContext } from 'react';
 import { Box, Drawer, IconButton, Tab, Tabs, Typography } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { S3Object } from '../..';
@@ -7,7 +7,9 @@ import { PluginManagerContext } from '../../contexts/plugins.context';
 
 interface SideNavProps {
   open: boolean;
+  defaultTab: number;
   onSetOpen: (open: boolean) => void;
+  onDefaultTab: (tab: number) => void;
   object: S3Object;
 }
 
@@ -28,18 +30,16 @@ const TabPanel: FC<TabPanelProps> = (props) => {
 };
 
 export const SideNav: FC<SideNavProps> = (props) => {
-  const { open, onSetOpen, object } = props;
+  const { open, onSetOpen, onDefaultTab, object, defaultTab } = props;
   const pluginManager = useContext(PluginManagerContext);
   const plugins = pluginManager.getPlugins('*');
-
-  const [value, setValue] = useState(0);
 
   const handleDrawerClose = () => {
     onSetOpen(false);
   };
 
   const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
+    onDefaultTab(newValue);
   };
 
   return (
@@ -55,7 +55,7 @@ export const SideNav: FC<SideNavProps> = (props) => {
             </Typography>
           </Box>
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs value={value} onChange={handleChange} variant="scrollable">
+            <Tabs value={defaultTab} onChange={handleChange} variant="scrollable">
               <Tab label="Info" />
               {plugins?.map((plugin) => (
                 <Tab key={plugin.name} label={plugin.name} />
@@ -64,7 +64,7 @@ export const SideNav: FC<SideNavProps> = (props) => {
           </Box>
         </Box>
         <Box sx={{ position: 'fixed', bottom: 0, height: 'calc(100vh - 120px)', width: '20vw', minWidth: 350 }}>
-          <TabPanel value={value} index={0}>
+          <TabPanel value={defaultTab} index={0}>
             <Box padding={2}>
               <Typography variant="body1">
                 <b>Size: </b>
@@ -85,7 +85,7 @@ export const SideNav: FC<SideNavProps> = (props) => {
             </Box>
           </TabPanel>
           {plugins?.map((plugin, index) => (
-            <TabPanel key={plugin.name} value={value} index={index + 1}>
+            <TabPanel key={plugin.name} value={defaultTab} index={index + 1}>
               {plugin.getView(object)}
             </TabPanel>
           ))}

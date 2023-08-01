@@ -14,6 +14,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import { faFile, faFolder } from '@fortawesome/free-solid-svg-icons';
 import { PluginManagerContext } from '../../contexts/plugins.context';
 import { PluginView } from '../..';
+import { SideNavPlugin } from '../../types/SideNavPlugin';
 
 interface ObjectCardProps {
   object: S3Object;
@@ -22,11 +23,12 @@ interface ObjectCardProps {
   onDownload: (object: S3Object) => void;
   onRename: (object: S3Object) => void;
   onDetails: (object: S3Object) => void;
+  onPlugin: (object: S3Object, tabId: number) => void;
 }
 
 export const ObjectCard: FC<ObjectCardProps> = (props) => {
   const { object, permissions } = props;
-  const { onDelete: handleDelete, onDownload: handleDownload, onRename: handleRename, onDetails: handleDetails } = props;
+  const { onDelete: handleDelete, onDownload: handleDownload, onRename: handleRename, onDetails: handleDetails, onPlugin: handlePlugin } = props;
   const ctx = useS3Context();
   const pluginManager = useContext(PluginManagerContext);
 
@@ -112,6 +114,17 @@ export const ObjectCard: FC<ObjectCardProps> = (props) => {
           <ListItemText primary="Delete" />
         </MenuItem>
       )}
+      {(pluginManager.getPlugins('*') as SideNavPlugin[])?.map((plugin, index) => (
+        <MenuItem
+          onClick={() => {
+            handleCloseMore();
+            handlePlugin(object, index + 1);
+          }}
+        >
+          <ListItemIcon> {plugin.getAction()}</ListItemIcon>
+          <ListItemText>{plugin.name}</ListItemText>
+        </MenuItem>
+      ))}
       {!object.isFolder && (
         <MenuItem
           onClick={() => {

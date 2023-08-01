@@ -15,6 +15,7 @@ interface FileListViewProps {
   onDownload: (object: S3Object) => void;
   onRename: (object: S3Object) => void;
   onDetails: (object: S3Object) => void;
+  onPlugin: (object: S3Object, tabId: number) => void;
 }
 
 export const FileListView: FC<FileListViewProps> = (props) => {
@@ -102,6 +103,7 @@ export const FileListView: FC<FileListViewProps> = (props) => {
                 onDownload={props.onDownload}
                 onRename={props.onRename}
                 onDetails={props.onDetails}
+                onPlugin={props.onPlugin}
               />
             ))}
           </TableBody>

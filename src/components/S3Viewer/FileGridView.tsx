@@ -14,6 +14,7 @@ interface FileGridViewProps {
   onDownload: (object: S3Object) => void;
   onRename: (object: S3Object) => void;
   onDetails: (object: S3Object) => void;
+  onPlugin: (object: S3Object, tabId: number) => void;
 }
 
 export const FileGridView: FC<FileGridViewProps> = (props) => {
@@ -69,6 +70,7 @@ export const FileGridView: FC<FileGridViewProps> = (props) => {
                   onDownload={props.onDownload}
                   onRename={props.onRename}
                   onDetails={props.onDetails}
+                  onPlugin={props.onPlugin}
                 />
               ))}
             </Grid>
@@ -91,6 +93,7 @@ export const FileGridView: FC<FileGridViewProps> = (props) => {
                   onDownload={props.onDownload}
                   onRename={props.onRename}
                   onDetails={props.onDetails}
+                  onPlugin={props.onPlugin}
                 />
               ))}
             </Grid>
