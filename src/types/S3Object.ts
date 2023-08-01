@@ -2,6 +2,7 @@ export type S3Object = {
   etag?: string;
   name: string;
   location: string;
+  uploadDate?: Date;
   lastModified: Date;
   versionId?: string;
   size: number;

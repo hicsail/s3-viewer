@@ -14,6 +14,7 @@ import { Permission } from '../../types/Permission';
 import { PluginManagerContext } from '../../contexts/plugins.context';
 import { PluginView } from '../Plugin/PluginView';
 import { formatBytes } from '../../utils/ObjectUtils';
+import { SideNavPlugin } from '../../types/SideNavPlugin';
 
 interface ObjectRowProps {
   object: S3Object;
@@ -21,11 +22,13 @@ interface ObjectRowProps {
   onDelete: (object: S3Object) => void;
   onDownload: (object: S3Object) => void;
   onRename: (object: S3Object) => void;
+  onDetails: (object: S3Object) => void;
+  onPlugin: (object: S3Object, tabId: number) => void;
 }
 
 export const ObjectRow: FC<ObjectRowProps> = (props) => {
   const { object, permissions } = props;
-  const { onDelete: handleDelete, onDownload: handleDownload, onRename: handleRename } = props;
+  const { onDelete: handleDelete, onDownload: handleDownload, onRename: handleRename, onDetails: handleDetails, onPlugin: handlePlugin } = props;
   const ctx = useS3Context();
   const pluginManager = useContext(PluginManagerContext);
 
@@ -51,11 +54,6 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
 
   const handlePreview = () => {
     setOpenModal(true);
-  };
-
-  const handleDetails = () => {
-    // TODO: implement details action
-    alert('details');
   };
 
   const handleDoubleClickRow = (event: MouseEvent) => {
@@ -102,11 +100,20 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
           </IconButton>
         </Grid>
       )}
-      <Grid item xs={2}>
-        <IconButton onClick={handleDetails} sx={displayActions ? {} : { visibility: 'hidden' }}>
-          <InfoIcon />
-        </IconButton>
-      </Grid>
+      {(pluginManager.getPlugins('*') as SideNavPlugin[])?.map((plugin, index) => (
+        <Grid item xs={2}>
+          <IconButton onClick={() => handlePlugin(object, index + 1)} sx={displayActions ? {} : { visibility: 'hidden' }}>
+            {plugin.icon}
+          </IconButton>
+        </Grid>
+      ))}
+      {!object.isFolder && (
+        <Grid item xs={2}>
+          <IconButton onClick={() => handleDetails(object)} sx={displayActions ? {} : { visibility: 'hidden' }}>
+            <InfoIcon />
+          </IconButton>
+        </Grid>
+      )}
       {
         // TODO: In the future support multiple plugins
         pluginManager.hasPlugin(props.object.ext) && <PluginView plugin={pluginManager.getPlugins(props.object.ext!)![0]} open={openModal} setOpen={setOpenModal} object={object} />
