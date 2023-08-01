@@ -121,7 +121,7 @@ export const ObjectCard: FC<ObjectCardProps> = (props) => {
             handlePlugin(object, index + 1);
           }}
         >
-          <ListItemIcon> {plugin.getAction()}</ListItemIcon>
+          <ListItemIcon> {plugin.icon}</ListItemIcon>
           <ListItemText>{plugin.name}</ListItemText>
         </MenuItem>
       ))}

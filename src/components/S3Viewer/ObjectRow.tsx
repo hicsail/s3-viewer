@@ -103,7 +103,7 @@ export const ObjectRow: FC<ObjectRowProps> = (props) => {
       {(pluginManager.getPlugins('*') as SideNavPlugin[])?.map((plugin, index) => (
         <Grid item xs={2}>
           <IconButton onClick={() => handlePlugin(object, index + 1)} sx={displayActions ? {} : { visibility: 'hidden' }}>
-            {plugin.getAction()}
+            {plugin.icon}
           </IconButton>
         </Grid>
       ))}
