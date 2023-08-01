@@ -31,13 +31,12 @@ import UploadIcon from '@mui/icons-material/Upload';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import { FileListView } from './FileListView';
 import { useS3Context } from '../../contexts/s3-context';
-import { createFolder, deleteFileOrFolder, downloadFile, getFile, getFile, getFoldersAndFiles, renameFileOrFolder, uploadFile } from '../../utils/S3Utils';
+import { createFolder, deleteFileOrFolder, downloadFile, getFile, getFoldersAndFiles, renameFileOrFolder, uploadFile } from '../../utils/S3Utils';
 import { FileBreadcrumb } from './FileBreadcrumb';
 import { Permission } from '../../types/Permission';
 import { FileSearch } from './FileSearch';
 import { FileDropZone } from './FileDropZone';
 import { FileGridView } from './FileGridView';
-import { SideNav } from './SideNav';
 import { SideNav } from './SideNav';
 
 const objectSets = new Set<string>();
