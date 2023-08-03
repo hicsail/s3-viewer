@@ -8,12 +8,14 @@ import {
   PutObjectCommand,
   S3Client
 } from '@aws-sdk/client-s3';
+import { v4 as uuid } from 'uuid';
 import { S3Object } from '../types/S3Object';
 
 const fileToS3Object = (path: string, object: any): S3Object => {
   const name = object.Key.endsWith('/') ? object.Key.split('/').slice(-2, -1)[0] : object.Key.split('/').pop();
 
   return {
+    id: object.Metadata?.id ? object.Metadata.id : '',
     etag: object.ETag,
     name,
     location: path.replace(/\/+$/, ''),
@@ -259,6 +261,7 @@ export const uploadFile = async (client: S3Client, bucketName: string, path: str
     Body: file,
     ContentType: file.type,
     Metadata: {
+      id: uuid(),
       'upload-date': new Date().toISOString()
     }
   };
