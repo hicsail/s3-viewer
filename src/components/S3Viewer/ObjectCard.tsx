@@ -116,6 +116,7 @@ export const ObjectCard: FC<ObjectCardProps> = (props) => {
       )}
       {(pluginManager.getPlugins('*') as SideNavPlugin[])?.map((plugin, index) => (
         <MenuItem
+          key={plugin.name}
           onClick={() => {
             handleCloseMore();
             handlePlugin(object, index + 1);
