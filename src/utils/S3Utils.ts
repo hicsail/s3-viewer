@@ -236,6 +236,11 @@ export const getAllFoldersAndFiles = async (client: S3Client, bucketName: string
   return objects;
 };
 
+/**
+ * Fetch all folders and files in the specified bucket that match the specified query.
+ *
+ * @returns an array of S3Object
+ */
 export const searchFoldersAndFiles = async (client: S3Client, bucketName: string, query: string): Promise<S3Object[]> => {
   const objects = await getAllFoldersAndFiles(client, bucketName);
   if (objects.length === 0) {
