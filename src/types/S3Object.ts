@@ -1,5 +1,5 @@
 export type S3Object = {
-  id: string;
+  id?: string;
   etag?: string;
   name: string;
   location: string;
