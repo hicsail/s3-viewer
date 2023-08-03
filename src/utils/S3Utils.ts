@@ -9,17 +9,47 @@ import {
   S3Client
 } from '@aws-sdk/client-s3';
 import { v4 as uuid } from 'uuid';
-import { S3Object } from '../types/S3Object';
+import { Metadata, S3Object } from '../types/S3Object';
 
-const fileToS3Object = (path: string, object: any): S3Object => {
+const fileToS3Object = async (client: S3Client, bucketName: string, path: string, object: any): Promise<S3Object> => {
   const name = object.Key.endsWith('/') ? object.Key.split('/').slice(-2, -1)[0] : object.Key.split('/').pop();
+  let metadata = object.Metadata;
+  if (!metadata) {
+    const params = {
+      Bucket: bucketName,
+      Key: object.$raw ? object.$raw.Key : object.Key
+    };
+
+    try {
+      const command = new HeadObjectCommand(params);
+      const response = await client.send(command);
+
+      if (!response.Metadata?.id) {
+        metadata = {
+          id: uuid(),
+          'upload-date': response.LastModified
+        };
+        const success = await updateMetadata(client, bucketName, object.$raw.Key, metadata);
+        if (!success) {
+          throw new Error('Error updating metadata');
+        }
+      } else {
+        metadata = {
+          id: response.Metadata.id,
+          'upload-date': response.Metadata['upload-date']
+        };
+      }
+    } catch (error) {
+      throw new Error('Error getting file: ' + error);
+    }
+  }
 
   return {
-    id: object.Metadata?.id ? object.Metadata.id : '',
+    id: metadata.id,
     etag: object.ETag,
     name,
     location: path.replace(/\/+$/, ''),
-    uploadDate: object.Metadata?.['upload-date'] ? new Date(object.Metadata['upload-date']) : undefined,
+    uploadDate: metadata['upload-date'],
     lastModified: object.LastModified,
     versionId: object.VersionId,
     size: object.Size,
@@ -177,7 +207,7 @@ export const getFile = async (client: S3Client, bucketName: string, object: S3Ob
     const command = new HeadObjectCommand(params);
     const response = await client.send(command);
 
-    return fileToS3Object(object.location, { ...response, ...object.$raw });
+    return fileToS3Object(client, bucketName, object.location, { ...response, ...object.$raw });
   } catch (error) {
     throw new Error('Error getting file: ' + error);
   }
@@ -202,17 +232,22 @@ export const getFoldersAndFiles = async (client: S3Client, bucketName: string, p
 
     const foldersPromises = response.CommonPrefixes?.map(async (content) => {
       const folder = await folderToS3Object(client, bucketName, path, content);
-
       return folder;
     });
 
     const folders = foldersPromises ? await Promise.all(foldersPromises) : [];
     const content = response.Contents?.filter((content) => content.Key !== path);
-    const files = content?.map((content) => fileToS3Object(path, content)) ?? [];
+
+    const filesPromises = content?.map(async (content) => {
+      const file = await fileToS3Object(client, bucketName, path, content);
+      return file;
+    });
+
+    const files = filesPromises ? await Promise.all(filesPromises) : [];
 
     return [...folders, ...files];
   } catch (error) {
-    throw new Error('Error getting folders: ' + error);
+    throw new Error('Error getting folders and files: ' + error);
   }
 };
 
@@ -274,6 +309,32 @@ export const uploadFile = async (client: S3Client, bucketName: string, path: str
   try {
     const command = new PutObjectCommand(params);
     await client.send(command);
+
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+};
+
+export const updateMetadata = async (client: S3Client, bucketName: string, object: S3Object, metadata: Metadata): Promise<boolean> => {
+  const params = {
+    Bucket: bucketName,
+    CopySource: `/${bucketName}/${object.$raw.Key}`,
+    Key: object.$raw.Key,
+    Metadata: metadata
+  };
+
+  try {
+    const command = new CopyObjectCommand(params);
+    await client.send(command);
+
+    const newMetaData = (await client.send(new HeadObjectCommand({ Bucket: bucketName, Key: object.$raw.Key }))).Metadata;
+    for (const key of Object.keys(metadata)) {
+      if (metadata[key] !== newMetaData?.[key]) {
+        return false;
+      }
+    }
 
     return true;
   } catch (error) {
