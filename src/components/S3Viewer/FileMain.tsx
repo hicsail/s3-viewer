@@ -23,7 +23,7 @@ import {
   Toolbar,
   Tooltip
 } from '@mui/material';
-import { FC, MouseEvent, useEffect, useRef, useState } from 'react';
+import { FC, MouseEvent, useContext, useEffect, useRef, useState } from 'react';
 import { S3Object } from '../../types/S3Object';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import GridViewIcon from '@mui/icons-material/GridView';
@@ -38,6 +38,10 @@ import { FileSearch } from './FileSearch';
 import { FileDropZone } from './FileDropZone';
 import { FileGridView } from './FileGridView';
 import { SideNav } from './SideNav';
+import { useEventBus } from '../../contexts/event-bus.context';
+import { PluginManagerContext } from '../../contexts/plugins.context';
+import { SideNavPlugin } from '../../types/SideNavPlugin';
+import { EventType } from '../../types/Event';
 
 const objectSets = new Set<string>();
 
@@ -52,6 +56,9 @@ interface FileMainProps {
 export const FileMain: FC<FileMainProps> = (props) => {
   const { client, bucket, bucketDisplayedName, permissions } = props;
   const ctx = useS3Context();
+  const pluginManager = useContext(PluginManagerContext);
+  const subscribedPlugins = (pluginManager.getPlugins('*') as SideNavPlugin[])?.filter((plugin) => Object.keys(plugin.subscriptions).length > 0);
+  const { subscribe, trigger } = useEventBus();
 
   // ########################################
   // #### State and variables definitions ###
@@ -257,7 +264,9 @@ export const FileMain: FC<FileMainProps> = (props) => {
   };
 
   const handleDelete = async () => {
-    await deleteFileOrFolder(client, bucket, selectedObjects[0]);
+    if (await deleteFileOrFolder(client, bucket, selectedObjects[0])) {
+      trigger('objectDeleted', selectedObjects[0]);
+    }
     setDeleteDialogOpen(false);
     setSelectedObjects([]);
     fetchObjects(ctx.currentPath);
@@ -281,7 +290,12 @@ export const FileMain: FC<FileMainProps> = (props) => {
       setTextFieldHelperText('Illegal name');
     } else {
       try {
-        await renameFileOrFolder(client, bucket, selectedObjects[0], newName);
+        const success = await renameFileOrFolder(client, bucket, selectedObjects[0], newName);
+        const newKey = selectedObjects[0].$raw.Key.replace(selectedObjects[0].name, newName);
+        const newObject = await getFile(client, bucket, { ...selectedObjects[0], $raw: { ...selectedObjects[0].$raw, Key: newKey } });
+        if (success) {
+          trigger('objectUpdated', { old: selectedObjects[0], new: newObject });
+        }
         fetchObjects(ctx.currentPath);
       } catch (err) {
         alert("Couldn't rename file or folder: " + err);
@@ -321,6 +335,15 @@ export const FileMain: FC<FileMainProps> = (props) => {
 
   // initial fetching for files and folders upon opening the page
   useEffect(() => {
+    const eventTypes: EventType[] = ['objectCreated', 'objectUploaded', 'objectDeleted', 'objectUpdated'];
+    for (const type of eventTypes) {
+      subscribe(type, (object: S3Object) => {
+        subscribedPlugins.forEach((plugin) => {
+          plugin.subscriptions[type] && plugin.subscriptions[type]!(object);
+        });
+      });
+    }
+
     fetchObjects(ctx.currentPath);
   }, []);
 
