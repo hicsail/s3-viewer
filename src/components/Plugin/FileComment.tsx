@@ -22,8 +22,9 @@ import AddCommentIcon from '@mui/icons-material/AddComment';
 import CommentIcon from '@mui/icons-material/Comment';
 import SendIcon from '@mui/icons-material/Send';
 import ReplyIcon from '@mui/icons-material/Reply';
+import { dummyComments } from './DummyComments';
 
-type Comment = {
+export type Comment = {
   _id: string;
   user: User;
   date: Date;
@@ -31,7 +32,7 @@ type Comment = {
   replies: Comment[];
 };
 
-type User = {
+export type User = {
   _id: string;
   name: string;
   email: string;
@@ -77,17 +78,15 @@ const FileCommentPanel: FC<{ object: S3Object }> = ({ object }) => {
   };
 
   const handleExpandReply = (replyTo: User | null, index: number) => {
+    const newState = comments.reduce((acc, _, index) => {
+      acc[index] = false;
+      return acc;
+    }, {} as { [key: number]: boolean });
+
+    newState[index] = true;
+
     setReplyTo(replyTo);
-    setExpandReply((_) => {
-      const newState = comments.reduce((acc, _, index) => {
-        acc[index] = false;
-        return acc;
-      }, {} as { [key: number]: boolean });
-
-      newState[index] = true;
-
-      return newState;
-    });
+    setExpandReply(newState);
   };
 
   const handleCollapseReply = (index: number) => {
@@ -116,7 +115,7 @@ const FileCommentPanel: FC<{ object: S3Object }> = ({ object }) => {
     const getComments = async (object: S3Object) => {
       // TODO: api call to get comments
       console.log('get comments for', object);
-      setComments([]);
+      setComments(dummyComments);
     };
 
     getComments(object);
