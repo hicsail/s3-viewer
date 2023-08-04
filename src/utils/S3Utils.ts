@@ -203,12 +203,9 @@ export const getFileByNameAndPath = async (client: S3Client, bucketName: string,
     Key: `${path}${path ? '/' : ''}${name}`
   };
 
-  console.log(params);
-
   try {
     const command = new HeadObjectCommand(params);
     const response = await client.send(command);
-    console.log(response);
 
     return fileToS3Object(client, bucketName, path, { ...response, Key: `${path}${path ? '/' : ''}${name}` });
   } catch (error) {

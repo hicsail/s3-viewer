@@ -50,9 +50,6 @@ export const FileSearch: FC<FileSearchProps> = (props) => {
       sx={{ width: 300 }}
       getOptionLabel={(option) => `${option.location}/${option.name}`}
       options={options}
-      onFocus={() => {
-        console.log('focused');
-      }}
       onChange={handleChange}
       filterOptions={(x) => x}
       renderInput={(params) => <TextField {...params} size="small" label="Search" variant="outlined" value={input} onChange={handleInputChange} fullWidth />}
