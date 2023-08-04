@@ -265,7 +265,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
 
   const handleDelete = async () => {
     if (await deleteFileOrFolder(client, bucket, selectedObjects[0])) {
-      trigger('objectDeleted', selectedObjects[0]);
+      trigger(EventType.OBJECT_DELETED, selectedObjects[0]);
     }
     setDeleteDialogOpen(false);
     setSelectedObjects([]);
@@ -294,7 +294,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
         const newKey = selectedObjects[0].$raw.Key.replace(selectedObjects[0].name, newName);
         const newObject = await getFile(client, bucket, { ...selectedObjects[0], $raw: { ...selectedObjects[0].$raw, Key: newKey } });
         if (success) {
-          trigger('objectUpdated', { old: selectedObjects[0], new: newObject });
+          trigger(EventType.OBJECT_UPDATED, { old: selectedObjects[0], new: newObject });
         }
         fetchObjects(ctx.currentPath);
       } catch (err) {
@@ -335,7 +335,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
 
   // initial fetching for files and folders upon opening the page
   useEffect(() => {
-    const eventTypes: EventType[] = ['objectCreated', 'objectUploaded', 'objectDeleted', 'objectUpdated'];
+    const eventTypes: EventType[] = [EventType.OBJECT_UPLOADED, EventType.OBJECT_DELETED, EventType.OBJECT_UPDATED];
     for (const type of eventTypes) {
       subscribe(type, (object: S3Object) => {
         subscribedPlugins.forEach((plugin) => {
