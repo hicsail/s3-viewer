@@ -1,4 +1,5 @@
 export type S3Object = {
+  id?: string;
   etag?: string;
   name: string;
   location: string;
@@ -11,4 +12,8 @@ export type S3Object = {
   owner?: any;
   fileContent?: string;
   $raw: any;
+};
+
+export type Metadata = {
+  [key: string]: string;
 };

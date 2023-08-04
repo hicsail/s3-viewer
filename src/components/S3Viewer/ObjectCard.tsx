@@ -114,17 +114,19 @@ export const ObjectCard: FC<ObjectCardProps> = (props) => {
           <ListItemText primary="Delete" />
         </MenuItem>
       )}
-      {(pluginManager.getPlugins('*') as SideNavPlugin[])?.map((plugin, index) => (
-        <MenuItem
-          onClick={() => {
-            handleCloseMore();
-            handlePlugin(object, index + 1);
-          }}
-        >
-          <ListItemIcon> {plugin.icon}</ListItemIcon>
-          <ListItemText>{plugin.name}</ListItemText>
-        </MenuItem>
-      ))}
+      {!object.isFolder &&
+        (pluginManager.getPlugins('*') as SideNavPlugin[])?.map((plugin, index) => (
+          <MenuItem
+            key={plugin.name}
+            onClick={() => {
+              handleCloseMore();
+              handlePlugin(object, index + 1);
+            }}
+          >
+            <ListItemIcon> {plugin.icon}</ListItemIcon>
+            <ListItemText>{plugin.name}</ListItemText>
+          </MenuItem>
+        ))}
       {!object.isFolder && (
         <MenuItem
           onClick={() => {

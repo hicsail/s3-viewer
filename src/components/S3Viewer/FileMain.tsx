@@ -23,7 +23,7 @@ import {
   Toolbar,
   Tooltip
 } from '@mui/material';
-import { FC, MouseEvent, useEffect, useRef, useState } from 'react';
+import { FC, MouseEvent, useContext, useEffect, useRef, useState } from 'react';
 import { S3Object } from '../../types/S3Object';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import GridViewIcon from '@mui/icons-material/GridView';
@@ -31,13 +31,17 @@ import UploadIcon from '@mui/icons-material/Upload';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import { FileListView } from './FileListView';
 import { useS3Context } from '../../contexts/s3-context';
-import { createFolder, deleteFileOrFolder, downloadFile, getFile, getFoldersAndFiles, renameFileOrFolder, uploadFile } from '../../utils/S3Utils';
+import { createFolder, deleteFileOrFolder, downloadFile, getFileByObject, getFoldersAndFiles, renameFileOrFolder, uploadFile, getFileByNameAndPath } from '../../utils/S3Utils';
 import { FileBreadcrumb } from './FileBreadcrumb';
 import { Permission } from '../../types/Permission';
 import { FileSearch } from './FileSearch';
 import { FileDropZone } from './FileDropZone';
 import { FileGridView } from './FileGridView';
 import { SideNav } from './SideNav';
+import { useEventBus } from '../../contexts/event-bus.context';
+import { PluginManagerContext } from '../../contexts/plugins.context';
+import { SideNavPlugin } from '../../types/SideNavPlugin';
+import { EventType } from '../../types/Event';
 
 const objectSets = new Set<string>();
 
@@ -52,6 +56,9 @@ interface FileMainProps {
 export const FileMain: FC<FileMainProps> = (props) => {
   const { client, bucket, bucketDisplayedName, permissions } = props;
   const ctx = useS3Context();
+  const pluginManager = useContext(PluginManagerContext);
+  const subscribedPlugins = (pluginManager.getPlugins('*') as SideNavPlugin[])?.filter((plugin) => Object.keys(plugin.subscriptions).length > 0);
+  const { subscribe, trigger } = useEventBus();
 
   // ########################################
   // #### State and variables definitions ###
@@ -102,6 +109,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
   const uploadObjects = async (files: File[]) => {
     let success = true;
     const failedFiles: string[] = [];
+    const successFiles: string[] = [];
     for (let i = 0; i < files.length; i++) {
       // TODO: pop up overwrite warning if the file already exists
 
@@ -111,6 +119,8 @@ export const FileMain: FC<FileMainProps> = (props) => {
         if (!status) {
           failedFiles.push(file.name);
           success &&= status;
+        } else {
+          successFiles.push(file.name);
         }
       } else if (objectSets.has(file.name.toLocaleLowerCase())) {
         // TODO: Overwrite warning
@@ -120,20 +130,24 @@ export const FileMain: FC<FileMainProps> = (props) => {
       }
     }
 
-    if (success) {
-      setSnackBarSettings({
-        message: `Successfully uploaded ${files.length} files`,
-        open: true,
-        severity: 'success'
-      });
+    if (success || failedFiles.length < files.length) {
+      if (success) {
+        setSnackBarSettings({
+          message: `Successfully uploaded ${files.length} files`,
+          open: true,
+          severity: 'success'
+        });
+      } else {
+        setSnackBarSettings({
+          message: `Successfully uploaded ${files.length - failedFiles.length} with ${failedFiles.length} ${failedFiles.length === 1 ? 'failure' : 'failures'}`,
+          open: true,
+          severity: 'warning'
+        });
+      }
 
-      fetchObjects(ctx.currentPath);
-    } else if (failedFiles.length < files.length) {
-      setSnackBarSettings({
-        message: `Successfully uploaded ${files.length - failedFiles.length} with ${failedFiles.length} ${failedFiles.length === 1 ? 'failure' : 'failures'}`,
-        open: true,
-        severity: 'warning'
-      });
+      const filesPromises = successFiles.map(async (file) => await getFileByNameAndPath(client, bucket, ctx.currentPath, file));
+      const uploadedFiles = await Promise.all(filesPromises);
+      trigger(EventType.OBJECT_UPLOADED, { files: uploadedFiles });
 
       fetchObjects(ctx.currentPath);
     } else {
@@ -257,7 +271,9 @@ export const FileMain: FC<FileMainProps> = (props) => {
   };
 
   const handleDelete = async () => {
-    await deleteFileOrFolder(client, bucket, selectedObjects[0]);
+    if (await deleteFileOrFolder(client, bucket, selectedObjects[0])) {
+      trigger(EventType.OBJECT_DELETED, selectedObjects[0]);
+    }
     setDeleteDialogOpen(false);
     setSelectedObjects([]);
     fetchObjects(ctx.currentPath);
@@ -281,7 +297,12 @@ export const FileMain: FC<FileMainProps> = (props) => {
       setTextFieldHelperText('Illegal name');
     } else {
       try {
-        await renameFileOrFolder(client, bucket, selectedObjects[0], newName);
+        const success = await renameFileOrFolder(client, bucket, selectedObjects[0], newName);
+        const newKey = selectedObjects[0].$raw.Key.replace(selectedObjects[0].name, newName);
+        const newObject = await getFileByObject(client, bucket, { ...selectedObjects[0], $raw: { ...selectedObjects[0].$raw, Key: newKey } });
+        if (success) {
+          trigger(EventType.OBJECT_UPDATED, { old: selectedObjects[0], new: newObject });
+        }
         fetchObjects(ctx.currentPath);
       } catch (err) {
         alert("Couldn't rename file or folder: " + err);
@@ -306,21 +327,28 @@ export const FileMain: FC<FileMainProps> = (props) => {
 
   // handlers for details
   const handleClickDetails = async (object: S3Object) => {
-    const objectDetails = await getFile(client, bucket, object);
-    setSelectedObjects([objectDetails]);
+    setSelectedObjects([object]);
     setSideNavTab(0);
     setSideNavOpen(true);
   };
 
   const handleClickPlugin = async (object: S3Object, tabId: number) => {
-    const objectDetails = await getFile(client, bucket, object);
-    setSelectedObjects([objectDetails]);
+    setSelectedObjects([object]);
     setSideNavTab(tabId);
     setSideNavOpen(true);
   };
 
   // initial fetching for files and folders upon opening the page
   useEffect(() => {
+    const eventTypes: EventType[] = [EventType.OBJECT_UPLOADED, EventType.OBJECT_DELETED, EventType.OBJECT_UPDATED];
+    for (const type of eventTypes) {
+      subscribe(type, (object: S3Object) => {
+        subscribedPlugins.forEach((plugin) => {
+          plugin.subscriptions[type] && plugin.subscriptions[type]!(object);
+        });
+      });
+    }
+
     fetchObjects(ctx.currentPath);
   }, []);
 

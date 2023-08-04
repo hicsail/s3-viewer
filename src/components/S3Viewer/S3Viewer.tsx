@@ -4,6 +4,7 @@ import { S3Client } from '@aws-sdk/client-s3';
 import { S3Provider } from '../../contexts/s3-context';
 import { PluginManagerProvider } from '../../contexts/plugins.context';
 import { Plugin } from './../../types/Plugin';
+import { EventBusProvider } from '../../contexts/event-bus.context';
 
 interface S3ViewerProps {
   client: S3Client;
@@ -52,15 +53,17 @@ export const S3Viewer: FC<S3ViewerProps> = (props) => {
 
   return (
     <S3Provider client={props.client} bucket={props.bucket} currentPath={currentPath} setCurrentPath={setCurrentPath} getSignedUrl={props.getSignedUrl}>
-      <PluginManagerProvider plugins={props.plugins || []}>
-        <FileMain
-          client={props.client}
-          bucket={props.bucket}
-          bucketDisplayedName={props.bucketDisplayedName}
-          permissions={permissions}
-          onCurrentPathChange={props.onCurrentPathChange}
-        />
-      </PluginManagerProvider>
+      <EventBusProvider>
+        <PluginManagerProvider plugins={props.plugins || []}>
+          <FileMain
+            client={props.client}
+            bucket={props.bucket}
+            bucketDisplayedName={props.bucketDisplayedName}
+            permissions={permissions}
+            onCurrentPathChange={props.onCurrentPathChange}
+          />
+        </PluginManagerProvider>
+      </EventBusProvider>
     </S3Provider>
   );
 };
