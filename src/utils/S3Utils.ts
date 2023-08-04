@@ -49,10 +49,10 @@ const fileToS3Object = async (client: S3Client, bucketName: string, path: string
     etag: object.ETag,
     name,
     location: path.replace(/\/+$/, ''),
-    uploadDate: metadata['upload-date'],
+    uploadDate: new Date(metadata['upload-date']),
     lastModified: object.LastModified,
     versionId: object.VersionId,
-    size: object.Size,
+    size: object.Size ? object.Size : object.ContentLength,
     isFolder: object.Key.endsWith('/'),
     owner: object.Owner,
     ext: name?.split('.').pop(),
@@ -197,7 +197,31 @@ export const renameFileOrFolder = async (client: S3Client, bucketName: string, o
  *
  * @returns an S3Object
  */
-export const getFile = async (client: S3Client, bucketName: string, object: S3Object): Promise<S3Object> => {
+export const getFileByNameAndPath = async (client: S3Client, bucketName: string, path: string, name: string): Promise<S3Object> => {
+  const params = {
+    Bucket: bucketName,
+    Key: `${path}${path ? '/' : ''}${name}`
+  };
+
+  console.log(params);
+
+  try {
+    const command = new HeadObjectCommand(params);
+    const response = await client.send(command);
+    console.log(response);
+
+    return fileToS3Object(client, bucketName, path, { ...response, Key: `${path}${path ? '/' : ''}${name}` });
+  } catch (error) {
+    throw new Error('Error getting file: ' + error);
+  }
+};
+
+/**
+ * Fetches a file from the specified bucket.
+ *
+ * @returns an S3Object
+ */
+export const getFileByObject = async (client: S3Client, bucketName: string, object: S3Object): Promise<S3Object> => {
   const params = {
     Bucket: bucketName,
     Key: object.$raw.Key
