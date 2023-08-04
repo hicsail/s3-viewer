@@ -31,7 +31,7 @@ import UploadIcon from '@mui/icons-material/Upload';
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import { FileListView } from './FileListView';
 import { useS3Context } from '../../contexts/s3-context';
-import { createFolder, deleteFileOrFolder, downloadFile, getFile, getFoldersAndFiles, renameFileOrFolder, uploadFile } from '../../utils/S3Utils';
+import { createFolder, deleteFileOrFolder, downloadFile, getFileByObject, getFoldersAndFiles, renameFileOrFolder, uploadFile, getFileByNameAndPath } from '../../utils/S3Utils';
 import { FileBreadcrumb } from './FileBreadcrumb';
 import { Permission } from '../../types/Permission';
 import { FileSearch } from './FileSearch';
@@ -109,6 +109,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
   const uploadObjects = async (files: File[]) => {
     let success = true;
     const failedFiles: string[] = [];
+    const successFiles: string[] = [];
     for (let i = 0; i < files.length; i++) {
       // TODO: pop up overwrite warning if the file already exists
 
@@ -118,6 +119,8 @@ export const FileMain: FC<FileMainProps> = (props) => {
         if (!status) {
           failedFiles.push(file.name);
           success &&= status;
+        } else {
+          successFiles.push(file.name);
         }
       } else if (objectSets.has(file.name.toLocaleLowerCase())) {
         // TODO: Overwrite warning
@@ -127,20 +130,24 @@ export const FileMain: FC<FileMainProps> = (props) => {
       }
     }
 
-    if (success) {
-      setSnackBarSettings({
-        message: `Successfully uploaded ${files.length} files`,
-        open: true,
-        severity: 'success'
-      });
+    if (success || failedFiles.length < files.length) {
+      if (success) {
+        setSnackBarSettings({
+          message: `Successfully uploaded ${files.length} files`,
+          open: true,
+          severity: 'success'
+        });
+      } else {
+        setSnackBarSettings({
+          message: `Successfully uploaded ${files.length - failedFiles.length} with ${failedFiles.length} ${failedFiles.length === 1 ? 'failure' : 'failures'}`,
+          open: true,
+          severity: 'warning'
+        });
+      }
 
-      fetchObjects(ctx.currentPath);
-    } else if (failedFiles.length < files.length) {
-      setSnackBarSettings({
-        message: `Successfully uploaded ${files.length - failedFiles.length} with ${failedFiles.length} ${failedFiles.length === 1 ? 'failure' : 'failures'}`,
-        open: true,
-        severity: 'warning'
-      });
+      const filesPromises = successFiles.map(async (file) => await getFileByNameAndPath(client, bucket, ctx.currentPath, file));
+      const uploadedFiles = await Promise.all(filesPromises);
+      trigger(EventType.OBJECT_UPLOADED, { files: uploadedFiles });
 
       fetchObjects(ctx.currentPath);
     } else {
@@ -292,7 +299,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
       try {
         const success = await renameFileOrFolder(client, bucket, selectedObjects[0], newName);
         const newKey = selectedObjects[0].$raw.Key.replace(selectedObjects[0].name, newName);
-        const newObject = await getFile(client, bucket, { ...selectedObjects[0], $raw: { ...selectedObjects[0].$raw, Key: newKey } });
+        const newObject = await getFileByObject(client, bucket, { ...selectedObjects[0], $raw: { ...selectedObjects[0].$raw, Key: newKey } });
         if (success) {
           trigger(EventType.OBJECT_UPDATED, { old: selectedObjects[0], new: newObject });
         }
@@ -320,15 +327,13 @@ export const FileMain: FC<FileMainProps> = (props) => {
 
   // handlers for details
   const handleClickDetails = async (object: S3Object) => {
-    const objectDetails = await getFile(client, bucket, object);
-    setSelectedObjects([objectDetails]);
+    setSelectedObjects([object]);
     setSideNavTab(0);
     setSideNavOpen(true);
   };
 
   const handleClickPlugin = async (object: S3Object, tabId: number) => {
-    const objectDetails = await getFile(client, bucket, object);
-    setSelectedObjects([objectDetails]);
+    setSelectedObjects([object]);
     setSideNavTab(tabId);
     setSideNavOpen(true);
   };
