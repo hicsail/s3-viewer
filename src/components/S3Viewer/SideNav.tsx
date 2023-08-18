@@ -1,7 +1,7 @@
 import { FC, useContext } from 'react';
 import { Box, Drawer, IconButton, Tab, Tabs, Typography } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { S3Object } from '../..';
+import { S3Object } from '../../types/S3Object';
 import { formatBytes } from '../../utils/ObjectUtils';
 import { PluginManagerContext } from '../../contexts/plugins.context';
 

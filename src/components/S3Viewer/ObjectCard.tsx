@@ -13,7 +13,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
 import { faFile, faFolder } from '@fortawesome/free-solid-svg-icons';
 import { PluginManagerContext } from '../../contexts/plugins.context';
-import { PluginView } from '../..';
+import { PluginView } from '../Plugin/PluginView';
 import { SideNavPlugin } from '../../types/SideNavPlugin';
 
 interface ObjectCardProps {

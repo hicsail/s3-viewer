@@ -1,7 +1,7 @@
 import { FC, MouseEvent, useEffect, useMemo, useState } from 'react';
 import { S3Object } from '../../types/S3Object';
 import { Table, TableBody, TableContainer, TablePagination } from '@mui/material';
-import EnhancedTableHead from '../EnhancedTableHead';
+import EnhancedTableHead from './EnhancedTableHead';
 import { ObjectRow } from './ObjectRow';
 import { S3Client } from '@aws-sdk/client-s3';
 import { Permission } from '../../types/Permission';
