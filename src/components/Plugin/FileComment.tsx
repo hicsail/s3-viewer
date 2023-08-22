@@ -157,7 +157,7 @@ const FileCommentPanel: FC<{ object: S3Object }> = ({ object }) => {
                       width: '100%'
                     }}
                   >
-                    <Divider orientation="vertical" variant="middle" flexItem sx={{ border: 1, borderColor: '#E0E0E0', marginRight: 2 }} />
+                    <Divider orientation="vertical" variant="middle" flexItem sx={{ border: 1, borderColor: '#E0E0E0', marginRight: '16px' }} />
                     <Box width="100%">
                       {comment.replies.map((reply, replyIndex) => (
                         <Stack key={reply._id} spacing={1}>
