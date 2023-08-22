@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { S3Object } from '../..';
+import { S3Object } from '../../types/S3Object';
 import { Plugin } from '../../types/Plugin';
 
 export class FileComment implements Plugin {
