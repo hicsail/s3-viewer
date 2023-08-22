@@ -33,7 +33,6 @@ export const S3Viewer: FC<S3ViewerProps> = (props) => {
   const action = !props.disableActions;
   const read = !props.disableRead && action;
   const write = !props.disableWrite && action;
-
   const permissions = {
     actions: action,
     upload: !props.disableUpload && write,
@@ -61,7 +60,7 @@ export const S3Viewer: FC<S3ViewerProps> = (props) => {
             bucket={props.bucket}
             bucketDisplayedName={props.bucketDisplayedName}
             permissions={permissions}
-            sideNavTopPadding={props.sideNavTopPadding ?? ''}
+            sideNavTopPadding={props.sideNavTopPadding}
             onCurrentPathChange={props.onCurrentPathChange}
           />
         </PluginManagerProvider>
