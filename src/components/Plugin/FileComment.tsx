@@ -122,10 +122,10 @@ const FileCommentPanel: FC<{ object: S3Object }> = ({ object }) => {
   }, []);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: `calc(100vh - 120px)`, width: '100%' }}>
-      <Grid sx={{ padding: 1, flexGrow: 1, overflowY: 'auto', margin: 0 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100% - 60px)' }}>
+      <Grid sx={{ padding: '8px', overflowY: 'auto', margin: 0 }}>
         {comments.map((comment, index) => (
-          <Grid key={comment._id} item marginBottom={1}>
+          <Grid key={comment._id} item marginBottom="8px">
             <Card>
               <CardHeader
                 avatar={<Avatar>{comment.user.name.split(' ')[0].charAt(0) + comment.user.name.split(' ')[1].charAt(0)}</Avatar>}
@@ -211,8 +211,11 @@ const FileCommentPanel: FC<{ object: S3Object }> = ({ object }) => {
       <Box
         sx={{
           display: 'flex',
-          padding: '10px',
+          position: 'absolute',
           width: 'calc(100% - 20px)',
+          bottom: 0,
+          padding: '10px',
+          zIndex: 1,
           borderTop: 1,
           borderColor: 'rgba(0, 0, 0, 0.12)',
           backgroundColor: 'white'
