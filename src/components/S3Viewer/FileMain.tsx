@@ -50,11 +50,12 @@ interface FileMainProps {
   bucket: string;
   bucketDisplayedName?: string;
   permissions: Permission;
+  sideNavTopPadding?: string;
   onCurrentPathChange?: (currentPath: string) => void;
 }
 
 export const FileMain: FC<FileMainProps> = (props) => {
-  const { client, bucket, bucketDisplayedName, permissions } = props;
+  const { client, bucket, bucketDisplayedName, permissions, sideNavTopPadding } = props;
   const ctx = useS3Context();
   const pluginManager = useContext(PluginManagerContext);
   const subscribedPlugins = (pluginManager.getPlugins('*') as SideNavPlugin[])?.filter((plugin) => Object.keys(plugin.subscriptions).length > 0);
@@ -524,7 +525,7 @@ export const FileMain: FC<FileMainProps> = (props) => {
         {deleteDialog}
         {uploadPopup}
       </Paper>
-      <SideNav open={sideNavOpen} onSetOpen={setSideNavOpen} onDefaultTab={setSideNavTab} object={selectedObjects[0]} defaultTab={sideNavTab} />
+      <SideNav open={sideNavOpen} topPadding={sideNavTopPadding} onSetOpen={setSideNavOpen} onDefaultTab={setSideNavTab} object={selectedObjects[0]} defaultTab={sideNavTab} />
     </Box>
   );
 };
