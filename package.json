@@ -1,6 +1,6 @@
 {
   "name": "@bu-sail/s3-viewer",
-  "version": "0.1.0-alpha.3",
+  "version": "0.1.0-alpha.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
