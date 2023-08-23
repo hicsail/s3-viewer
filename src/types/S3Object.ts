@@ -13,7 +13,3 @@ export type S3Object = {
   fileContent?: string;
   $raw: any;
 };
-
-export type Metadata = {
-  [key: string]: string;
-};

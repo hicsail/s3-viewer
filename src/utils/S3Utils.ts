@@ -9,15 +9,16 @@ import {
   S3Client
 } from '@aws-sdk/client-s3';
 import { v4 as uuid } from 'uuid';
-import { Metadata, S3Object } from '../types/S3Object';
+import { S3Object } from '../types/S3Object';
 
 const fileToS3Object = async (client: S3Client, bucketName: string, path: string, object: any): Promise<S3Object> => {
   const name = object.Key.endsWith('/') ? object.Key.split('/').slice(-2, -1)[0] : object.Key.split('/').pop();
-  let metadata = object.Metadata;
+  let metadata: Record<string, string> = object.Metadata;
   if (!metadata) {
+    const key = object.$raw ? object.$raw.Key : object.Key;
     const params = {
       Bucket: bucketName,
-      Key: object.$raw ? object.$raw.Key : object.Key
+      Key: key
     };
 
     try {
@@ -27,9 +28,9 @@ const fileToS3Object = async (client: S3Client, bucketName: string, path: string
       if (!response.Metadata?.id) {
         metadata = {
           id: uuid(),
-          'upload-date': response.LastModified
+          'upload-date': response.LastModified!.toISOString()
         };
-        const success = await updateMetadata(client, bucketName, object.$raw.Key, metadata);
+        const success = await updateMetadata(client, bucketName, key, metadata);
         if (!success) {
           throw new Error('Error updating metadata');
         }
@@ -338,19 +339,20 @@ export const uploadFile = async (client: S3Client, bucketName: string, path: str
   }
 };
 
-export const updateMetadata = async (client: S3Client, bucketName: string, object: S3Object, metadata: Metadata): Promise<boolean> => {
+export const updateMetadata = async (client: S3Client, bucketName: string, key: string, metadata: Record<string, string>): Promise<boolean> => {
   const params = {
     Bucket: bucketName,
-    CopySource: `/${bucketName}/${object.$raw.Key}`,
-    Key: object.$raw.Key,
-    Metadata: metadata
+    CopySource: `/${bucketName}/${key}`,
+    Key: key,
+    Metadata: metadata,
+    MetadataDirective: 'REPLACE'
   };
 
   try {
     const command = new CopyObjectCommand(params);
     await client.send(command);
 
-    const newMetaData = (await client.send(new HeadObjectCommand({ Bucket: bucketName, Key: object.$raw.Key }))).Metadata;
+    const newMetaData = (await client.send(new HeadObjectCommand({ Bucket: bucketName, Key: key }))).Metadata;
     for (const key of Object.keys(metadata)) {
       if (metadata[key] !== newMetaData?.[key]) {
         return false;

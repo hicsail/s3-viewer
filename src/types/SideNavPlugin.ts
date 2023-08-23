@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Plugin } from '..';
+import { Plugin } from './Plugin';
 import { EventType } from './Event';
 
 export interface SideNavPlugin extends Plugin {

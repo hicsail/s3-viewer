@@ -1,13 +1,14 @@
 import { FC, useContext } from 'react';
 import { Box, Drawer, IconButton, Tab, Tabs, Typography } from '@mui/material';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { S3Object } from '../..';
+import { S3Object } from '../../types/S3Object';
 import { formatBytes } from '../../utils/ObjectUtils';
 import { PluginManagerContext } from '../../contexts/plugins.context';
 
 interface SideNavProps {
   open: boolean;
   defaultTab: number;
+  topPadding?: string;
   onSetOpen: (open: boolean) => void;
   onDefaultTab: (tab: number) => void;
   object: S3Object;
@@ -23,14 +24,14 @@ const TabPanel: FC<TabPanelProps> = (props) => {
   const { children, value, index, ...other } = props;
 
   return (
-    <Box component="div" role="tabpanel" hidden={value !== index} id={`tabpanel-${index}`} aria-labelledby={`tab-${index}`} {...other}>
-      {value === index && <Box>{children}</Box>}
+    <Box component="div" role="tabpanel" hidden={value !== index} id={`tabpanel-${index}`} aria-labelledby={`tab-${index}`} height="inherit" {...other}>
+      {value === index && <Box height="inherit">{children}</Box>}
     </Box>
   );
 };
 
 export const SideNav: FC<SideNavProps> = (props) => {
-  const { open, onSetOpen, onDefaultTab, object, defaultTab } = props;
+  const { open, topPadding, onSetOpen, onDefaultTab, object, defaultTab } = props;
   const pluginManager = useContext(PluginManagerContext);
   const plugins = pluginManager.getPlugins('*');
 
@@ -44,9 +45,10 @@ export const SideNav: FC<SideNavProps> = (props) => {
 
   return (
     <Drawer variant="persistent" anchor="right" open={open}>
-      <Box component="div" width="20vw" minWidth={350}>
-        <Box sx={{ position: 'fixed', height: '120px', width: '20vw', minWidth: 350, zIndex: 1, backgroundColor: 'white' }}>
-          <Box display="flex" padding={2}>
+      <Box height={topPadding ?? 0} />
+      <Box component="div" width="20vw" minWidth="350px">
+        <Box sx={{ position: 'fixed', height: '120px', width: '20vw', minWidth: '350px', zIndex: 1, backgroundColor: 'white' }}>
+          <Box display="flex" padding="16px">
             <IconButton onClick={handleDrawerClose}>
               <ChevronRightIcon />
             </IconButton>
@@ -63,9 +65,9 @@ export const SideNav: FC<SideNavProps> = (props) => {
             </Tabs>
           </Box>
         </Box>
-        <Box sx={{ position: 'fixed', bottom: 0, height: 'calc(100vh - 120px)', width: '20vw', minWidth: 350 }}>
+        <Box sx={{ position: 'fixed', bottom: 0, height: `calc(100vh - 120px ${topPadding ? '- '.concat(topPadding) : ''})`, width: '20vw', minWidth: '350px' }}>
           <TabPanel value={defaultTab} index={0}>
-            <Box padding={2}>
+            <Box padding="16px">
               <Typography variant="body1">
                 <b>Size: </b>
                 {formatBytes(object?.size)}
