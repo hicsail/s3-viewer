@@ -7,6 +7,7 @@ export * from './components/Plugin/DocViewer';
 
 // Types
 export * from './types/Plugin';
+export * from './types/SideNavPlugin';
 export * from './types/S3Object';
 
 // Contexts
